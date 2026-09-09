@@ -6,16 +6,26 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { ListScreen } from './src/screens/ListScreen';
 import { CatalogScreen } from './src/screens/CatalogScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { MasterListScreen } from './src/screens/MasterListScreen';
+import { RecordDetailScreen } from './src/screens/RecordDetailScreen';
+import { RecordFormScreen } from './src/screens/RecordFormScreen';
 import { BackHeader } from './src/components/BackHeader';
 import { colors } from './src/theme/colors';
 import { getMessages, type Locale } from './src/i18n';
+import type { CatalogKey, MasterRecord } from './src/data/masterData';
 
 type Tab = 'home' | 'work' | 'catalog' | 'maintenance' | 'profile';
-type ChildPage = { parent: Tab; title: string } | null;
+type Route =
+  | { kind: 'simple'; parent: Tab; title: string }
+  | { kind: 'settings' }
+  | { kind: 'master'; category: CatalogKey; title: string }
+  | { kind: 'detail'; category: CatalogKey; title: string; record: MasterRecord }
+  | { kind: 'form'; category: CatalogKey; title: string; record?: MasterRecord }
+  | null;
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
-  const [childPage, setChildPage] = useState<ChildPage>(null);
+  const [route, setRoute] = useState<Route>(null);
   const [locale, setLocale] = useState<Locale>('vi');
   const messages = useMemo(() => getMessages(locale), [locale]);
 
@@ -27,46 +37,88 @@ export default function App() {
     { key: 'profile', label: messages.nav.profile, icon: 'person-outline' },
   ];
 
-  const openChild = (parent: Tab, title: string) => setChildPage({ parent, title });
-  const goBack = () => setChildPage(null);
+  const renderRoute = () => {
+    if (!route) return null;
 
-  const renderChild = () => {
-    if (!childPage) return null;
-    const parentLabel = tabs.find((item) => item.key === childPage.parent)?.label ?? messages.nav.home;
-    if (childPage.parent === 'profile' && childPage.title === messages.profile.settings) {
+    if (route.kind === 'settings') {
       return (
         <View style={styles.child}>
-          <BackHeader label={parentLabel} onPress={goBack} />
+          <BackHeader label={messages.nav.profile} onPress={() => setRoute(null)} />
           <SettingsScreen locale={locale} onChangeLocale={setLocale} messages={messages} />
         </View>
       );
     }
+
+    if (route.kind === 'master') {
+      return (
+        <MasterListScreen
+          category={route.category}
+          title={route.title}
+          messages={messages}
+          onBack={() => setRoute(null)}
+          onOpenRecord={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })}
+          onCreate={() => setRoute({ kind: 'form', category: route.category, title: route.title })}
+        />
+      );
+    }
+
+    if (route.kind === 'detail') {
+      return (
+        <RecordDetailScreen
+          title={route.title}
+          record={route.record}
+          messages={messages}
+          onBack={() => setRoute({ kind: 'master', category: route.category, title: route.title })}
+          onEdit={() => setRoute({ kind: 'form', category: route.category, title: route.title, record: route.record })}
+        />
+      );
+    }
+
+    if (route.kind === 'form') {
+      return (
+        <RecordFormScreen
+          title={route.title}
+          record={route.record}
+          messages={messages}
+          onBack={() => route.record
+            ? setRoute({ kind: 'detail', category: route.category, title: route.title, record: route.record })
+            : setRoute({ kind: 'master', category: route.category, title: route.title })}
+          onSave={() => setRoute({ kind: 'master', category: route.category, title: route.title })}
+        />
+      );
+    }
+
+    const parentLabel = tabs.find((item) => item.key === route.parent)?.label ?? messages.nav.home;
     return (
       <View style={styles.child}>
-        <BackHeader label={parentLabel} onPress={goBack} />
-        <ListScreen title={childPage.title} subtitle={messages.common.childSubtitle} icon="document-text-outline" items={[]} />
+        <BackHeader label={parentLabel} onPress={() => setRoute(null)} />
+        <ListScreen title={route.title} subtitle={messages.common.childSubtitle} icon="document-text-outline" items={[]} />
       </View>
     );
   };
 
-  const renderScreen = () => {
-    if (childPage) return renderChild();
+  const renderRoot = () => {
     if (tab === 'home') return <HomeScreen messages={messages} />;
     if (tab === 'work') {
       const items = [messages.work.repairRequest, messages.work.openOrders, messages.work.mine, messages.work.overdue, messages.work.completed];
-      return <ListScreen title={messages.work.title} subtitle={messages.work.subtitle} icon="clipboard-outline" items={items} onItemPress={(item) => openChild('work', item)} />;
+      return <ListScreen title={messages.work.title} subtitle={messages.work.subtitle} icon="clipboard-outline" items={items} onItemPress={(item) => setRoute({ kind: 'simple', parent: 'work', title: item })} />;
     }
-    if (tab === 'catalog') return <CatalogScreen messages={messages} onItemPress={(title: string) => openChild('catalog', title)} />;
+    if (tab === 'catalog') {
+      return <CatalogScreen messages={messages} onItemPress={(category, title) => setRoute({ kind: 'master', category, title })} />;
+    }
     if (tab === 'maintenance') {
       const items = [messages.maintenance.today, messages.maintenance.thisWeek, messages.maintenance.upcoming, messages.maintenance.checklist, messages.maintenance.history];
-      return <ListScreen title={messages.maintenance.title} subtitle={messages.maintenance.subtitle} icon="calendar-outline" items={items} onItemPress={(item) => openChild('maintenance', item)} />;
+      return <ListScreen title={messages.maintenance.title} subtitle={messages.maintenance.subtitle} icon="calendar-outline" items={items} onItemPress={(item) => setRoute({ kind: 'simple', parent: 'maintenance', title: item })} />;
     }
     const items = [messages.profile.account, messages.profile.notifications, messages.profile.settings, messages.profile.logout];
-    return <ListScreen title={messages.profile.title} subtitle={messages.profile.subtitle} icon="person-outline" items={items} onItemPress={(item, index) => { if (index !== 3) openChild('profile', item); }} />;
+    return <ListScreen title={messages.profile.title} subtitle={messages.profile.subtitle} icon="person-outline" items={items} onItemPress={(item, index) => {
+      if (index === 2) setRoute({ kind: 'settings' });
+      else if (index !== 3) setRoute({ kind: 'simple', parent: 'profile', title: item });
+    }} />;
   };
 
   const changeTab = (nextTab: Tab) => {
-    setChildPage(null);
+    setRoute(null);
     setTab(nextTab);
   };
 
@@ -74,7 +126,7 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <StatusBar style="dark" />
       <View style={styles.shell}>
-        <View style={styles.main}>{renderScreen()}</View>
+        <View style={styles.main}>{route ? renderRoute() : renderRoot()}</View>
         <View style={styles.nav}>
           {tabs.map((item) => {
             const active = item.key === tab;
