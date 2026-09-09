@@ -4,24 +4,30 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { ListScreen } from './src/screens/ListScreen';
+import { CatalogScreen } from './src/screens/CatalogScreen';
 import { colors } from './src/theme/colors';
+import { t } from './src/i18n';
 
-type Tab = 'home' | 'work' | 'assets' | 'pm' | 'profile';
+type Tab = 'home' | 'work' | 'catalog' | 'maintenance' | 'profile';
 
 const tabs: { key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'home', label: 'Trang chủ', icon: 'home-outline' },
-  { key: 'work', label: 'Công việc', icon: 'clipboard-outline' },
-  { key: 'assets', label: 'Thiết bị', icon: 'cube-outline' },
-  { key: 'pm', label: 'Bảo trì', icon: 'calendar-outline' },
-  { key: 'profile', label: 'Cá nhân', icon: 'person-outline' },
+  { key: 'home', label: t.nav.home, icon: 'home-outline' },
+  { key: 'work', label: t.nav.work, icon: 'clipboard-outline' },
+  { key: 'catalog', label: t.nav.catalog, icon: 'grid-outline' },
+  { key: 'maintenance', label: t.nav.maintenance, icon: 'calendar-outline' },
+  { key: 'profile', label: t.nav.profile, icon: 'person-outline' },
 ];
 
 function Screen({ tab }: { tab: Tab }) {
   if (tab === 'home') return <HomeScreen />;
-  if (tab === 'work') return <ListScreen title="Công việc" subtitle="Quản lý yêu cầu và lệnh bảo trì" icon="clipboard-outline" items={['Việc đang mở', 'Việc của tôi', 'Quá hạn', 'Đã hoàn thành']} />;
-  if (tab === 'assets') return <ListScreen title="Thiết bị" subtitle="Tài sản và tình trạng vận hành" icon="cube-outline" items={['Tất cả thiết bị', 'Thiết bị đang chạy', 'Thiết bị dừng', 'Quét mã QR']} />;
-  if (tab === 'pm') return <ListScreen title="Bảo trì định kỳ" subtitle="Kế hoạch PM và lịch thực hiện" icon="calendar-outline" items={['Hôm nay', 'Tuần này', 'Sắp đến hạn', 'Mẫu checklist']} />;
-  return <ListScreen title="Cá nhân" subtitle="Tài khoản và cài đặt ứng dụng" icon="person-outline" items={['Hồ sơ', 'Thông báo', 'Cài đặt', 'Đăng xuất']} />;
+  if (tab === 'work') {
+    return <ListScreen title={t.work.title} subtitle={t.work.subtitle} icon="clipboard-outline" items={['Yêu cầu sửa chữa', 'Lệnh bảo trì đang mở', 'Công việc của tôi', 'Công việc quá hạn', 'Công việc đã hoàn thành']} />;
+  }
+  if (tab === 'catalog') return <CatalogScreen />;
+  if (tab === 'maintenance') {
+    return <ListScreen title={t.maintenance.title} subtitle={t.maintenance.subtitle} icon="calendar-outline" items={['Bảo trì hôm nay', 'Kế hoạch tuần này', 'Sắp đến hạn', 'Biểu mẫu kiểm tra', 'Lịch sử bảo trì']} />;
+  }
+  return <ListScreen title={t.profile.title} subtitle={t.profile.subtitle} icon="person-outline" items={['Hồ sơ cá nhân', 'Thông báo', 'Cài đặt', 'Ngôn ngữ', 'Đăng xuất']} />;
 }
 
 export default function App() {
