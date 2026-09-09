@@ -37,6 +37,11 @@ jobs:
       - name: Export Expo Web
         run: npm run bundle:web
 
+      - name: Bundle Ionicons font for static web
+        run: |
+          cp node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf dist-web/Ionicons.ttf
+          test -s dist-web/Ionicons.ttf
+
       - name: Ensure Cloudflare Pages project exists
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
