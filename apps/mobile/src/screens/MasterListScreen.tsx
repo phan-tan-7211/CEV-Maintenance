@@ -50,7 +50,7 @@ export function MasterListScreen({ category, title, messages, onBack, onOpenReco
       <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load(true)} />}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{messages.common.masterListSubtitle}</Text>
-        <View style={styles.live}><View style={styles.dot} /><Text style={styles.liveText}>Supabase · LIVE DATA</Text></View>
+        <View style={styles.live}><View style={styles.dot} /><Text style={styles.liveText}>DATABASE · LIVE DATA</Text></View>
         <View style={styles.search}><Ionicons name="search-outline" size={20} color={colors.muted} /><TextInput value={query} onChangeText={setQuery} placeholder={messages.common.search} placeholderTextColor={colors.muted} style={styles.input} /></View>
         <View style={styles.summary}><Text style={styles.summaryText}>{messages.common.total}: {rows.length}</Text><Text style={styles.summaryText}>{messages.common.tapForDetail}</Text></View>
         {loading ? <View style={styles.loading}><ActivityIndicator color={colors.primary} /><Text style={styles.emptyText}>{messages.common.loading ?? 'Đang tải dữ liệu...'}</Text></View> : null}
