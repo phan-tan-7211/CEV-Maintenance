@@ -1,8 +1,9 @@
 import { supabase } from '../lib/supabase';
 import type { CatalogKey, MasterRecord } from './masterData';
+import { getNextLocationCode, getNextManagementCode } from './managementCodes';
 
 type Draft = {
-  code: string;
+  code?: string;
   name: string;
   specification?: string;
   location?: string;
@@ -20,8 +21,7 @@ async function ensureLocation(name?: string) {
   if (!trimmed) return null;
   const existing = await supabase.from('locations').select('id').ilike('name', trimmed).limit(1).maybeSingle();
   if (existing.data?.id) return existing.data.id as string;
-  const codeBase = trimmed.toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'LOC';
-  const code = `${codeBase}-${Date.now().toString().slice(-5)}`;
+  const code = await getNextLocationCode();
   const created = await supabase.from('locations').insert({ code, name: trimmed }).select('id').single();
   if (created.error) throw created.error;
   return created.data.id as string;
@@ -54,17 +54,33 @@ export async function listMasterRecords(category: CatalogKey): Promise<MasterRec
   return (data ?? []).map((row: any) => fromRow(category, row));
 }
 
+async function resolveManagementCode(category: CatalogKey, id?: string, requestedCode?: string) {
+  if (!id) return getNextManagementCode(category);
+  if (requestedCode?.trim()) return requestedCode.trim();
+
+  const table = tableMap[category];
+  const { data, error } = await supabase.from(table).select('code').eq('id', id).single();
+  if (error) throw error;
+  if (!data?.code) throw new Error('Không tìm thấy mã quản lý hiện tại.');
+  return data.code as string;
+}
+
 export async function saveMasterRecord(category: CatalogKey, draft: Draft, id?: string): Promise<MasterRecord> {
+  if (!draft.name.trim()) throw new Error('Tên là thông tin bắt buộc.');
+
+  const table = tableMap[category];
+  const code = await resolveManagementCode(category, id, draft.code);
   const locationId = category === 'suppliers' ? null : await ensureLocation(draft.location);
-  let payload: any = { code: draft.code.trim(), name: draft.name.trim(), status: 'active', updated_at: new Date().toISOString() };
-  if (category === 'assets' || category === 'utilities') payload = { ...payload, asset_type: category === 'assets' ? 'production' : 'utility', location_id: locationId, model: draft.specification || null, next_maintenance_date: draft.nextDue || null, qr_code: `ASSET:${draft.code.trim()}` };
-  if (category === 'tooling') payload = { ...payload, location_id: locationId, specification: draft.specification || null, next_maintenance_date: draft.nextDue || null, qr_code: `TOOL:${draft.code.trim()}` };
-  if (category === 'measuring') payload = { ...payload, location_id: locationId, measurement_range: draft.specification || null, next_calibration_date: draft.nextDue || null, qr_code: `MEASURE:${draft.code.trim()}` };
+  let payload: any = { code, name: draft.name.trim(), status: 'active', updated_at: new Date().toISOString() };
+
+  if (category === 'assets' || category === 'utilities') payload = { ...payload, asset_type: category === 'assets' ? 'production' : 'utility', location_id: locationId, model: draft.specification || null, next_maintenance_date: draft.nextDue || null, qr_code: `ASSET:${code}` };
+  if (category === 'tooling') payload = { ...payload, location_id: locationId, specification: draft.specification || null, next_maintenance_date: draft.nextDue || null, qr_code: `TOOL:${code}` };
+  if (category === 'measuring') payload = { ...payload, location_id: locationId, measurement_range: draft.specification || null, next_calibration_date: draft.nextDue || null, qr_code: `MEASURE:${code}` };
   if (category === 'spareParts') payload = { ...payload, location_id: locationId, specification: draft.specification || null, quantity: draft.quantity ?? 0, unit: draft.unit || 'EA' };
   if (category === 'consumables') payload = { ...payload, location_id: locationId, specification: draft.specification || null, quantity: draft.quantity ?? 0, unit: draft.unit || 'EA' };
   if (category === 'safety') payload = { ...payload, location_id: locationId, equipment_type: draft.specification || null, next_inspection_date: draft.nextDue || null };
   if (category === 'suppliers') payload = { ...payload, service_type: draft.specification || null, next_evaluation_date: draft.nextDue || null, approved: true };
-  const table = tableMap[category];
+
   const request = id ? supabase.from(table).update(payload).eq('id', id) : supabase.from(table).insert(payload);
   const { data, error } = await request.select(category === 'suppliers' ? '*' : '*, locations(name)').single();
   if (error) throw error;
