@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from './AppIcon';
 import { colors } from '../theme/colors';
 
 type Props = { label: string; onPress: () => void };
@@ -8,7 +8,7 @@ export function BackHeader({ label, onPress }: Props) {
   return (
     <View style={styles.wrap}>
       <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.7} accessibilityRole="button">
-        <Ionicons name="chevron-back" size={24} color={colors.text} />
+        <AppIcon name="chevron-back" size={24} color={colors.text} />
         <Text style={styles.label}>{label}</Text>
       </TouchableOpacity>
     </View>
