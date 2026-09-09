@@ -1,18 +1,19 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import type { CatalogKey } from '../data/masterData';
 
-export function CatalogScreen({ messages, onItemPress }: { messages: any; onItemPress?: (title: string) => void }) {
-  const groups = [
-    { icon: 'construct-outline', title: messages.catalog.assets, note: messages.catalog.assetsNote },
-    { icon: 'flash-outline', title: messages.catalog.utilities, note: messages.catalog.utilitiesNote },
-    { icon: 'hammer-outline', title: messages.catalog.tooling, note: messages.catalog.toolingNote },
-    { icon: 'speedometer-outline', title: messages.catalog.measuring, note: messages.catalog.measuringNote },
-    { icon: 'settings-outline', title: messages.catalog.spareParts, note: messages.catalog.sparePartsNote },
-    { icon: 'flask-outline', title: messages.catalog.consumables, note: messages.catalog.consumablesNote },
-    { icon: 'shield-checkmark-outline', title: messages.catalog.safety, note: messages.catalog.safetyNote },
-    { icon: 'business-outline', title: messages.catalog.suppliers, note: messages.catalog.suppliersNote },
-  ] as const;
+export function CatalogScreen({ messages, onItemPress }: { messages: any; onItemPress?: (key: CatalogKey, title: string) => void }) {
+  const groups: { key: CatalogKey; icon: keyof typeof Ionicons.glyphMap; title: string; note: string }[] = [
+    { key: 'assets', icon: 'construct-outline', title: messages.catalog.assets, note: messages.catalog.assetsNote },
+    { key: 'utilities', icon: 'flash-outline', title: messages.catalog.utilities, note: messages.catalog.utilitiesNote },
+    { key: 'tooling', icon: 'hammer-outline', title: messages.catalog.tooling, note: messages.catalog.toolingNote },
+    { key: 'measuring', icon: 'speedometer-outline', title: messages.catalog.measuring, note: messages.catalog.measuringNote },
+    { key: 'spareParts', icon: 'settings-outline', title: messages.catalog.spareParts, note: messages.catalog.sparePartsNote },
+    { key: 'consumables', icon: 'flask-outline', title: messages.catalog.consumables, note: messages.catalog.consumablesNote },
+    { key: 'safety', icon: 'shield-checkmark-outline', title: messages.catalog.safety, note: messages.catalog.safetyNote },
+    { key: 'suppliers', icon: 'business-outline', title: messages.catalog.suppliers, note: messages.catalog.suppliersNote },
+  ];
 
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -21,7 +22,7 @@ export function CatalogScreen({ messages, onItemPress }: { messages: any; onItem
       <Text style={styles.subtitle}>{messages.catalog.subtitle}</Text>
       <View style={styles.list}>
         {groups.map((item) => (
-          <TouchableOpacity key={item.title} style={styles.card} activeOpacity={0.7} onPress={() => onItemPress?.(item.title)}>
+          <TouchableOpacity key={item.key} style={styles.card} activeOpacity={0.7} onPress={() => onItemPress?.(item.key, item.title)}>
             <View style={styles.iconWrap}><Ionicons name={item.icon} size={22} color={colors.primary} /></View>
             <View style={styles.cardBody}><Text style={styles.cardTitle}>{item.title}</Text><Text style={styles.cardNote}>{item.note}</Text></View>
             <Ionicons name="chevron-forward" size={20} color={colors.muted} />
