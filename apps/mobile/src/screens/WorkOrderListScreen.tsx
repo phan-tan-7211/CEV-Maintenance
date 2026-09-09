@@ -16,7 +16,7 @@ export function WorkOrderListScreen({ title, filter, messages, onBack }: Props) 
     <View style={styles.header}><TouchableOpacity onPress={onBack} style={styles.back}><Ionicons name="chevron-back" size={24} color={colors.text} /><Text style={styles.backText}>{messages.nav.work}</Text></TouchableOpacity></View>
     <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load(true)} />}>
       <Text style={styles.title}>{title}</Text><Text style={styles.subtitle}>{messages.work.subtitle}</Text>
-      <View style={styles.live}><View style={styles.dot}/><Text style={styles.liveText}>SUPABASE · LIVE DATA</Text></View>
+      <View style={styles.live}><View style={styles.dot}/><Text style={styles.liveText}>DATABASE · LIVE DATA</Text></View>
       {loading ? <View style={styles.loading}><ActivityIndicator color={colors.primary}/></View> : <View style={styles.list}>{rows.map((row) => <View key={row.id} style={styles.card}>
         <View style={styles.icon}><Ionicons name="clipboard-outline" size={20} color={colors.primary}/></View>
         <View style={styles.body}><View style={styles.top}><Text style={styles.code}>{row.code}</Text><Text style={styles.priority}>{row.priority.toUpperCase()}</Text></View><Text style={styles.name}>{row.title}</Text><Text style={styles.meta}>{row.asset ?? '-'}</Text><Text style={styles.meta}>{row.status}{row.dueAt ? ` · ${String(row.dueAt).replace('T',' ').slice(0,16)}` : ''}</Text></View>
