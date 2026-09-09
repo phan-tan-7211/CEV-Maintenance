@@ -3,31 +3,31 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatCard } from '../components/StatCard';
 import { colors } from '../theme/colors';
 
-export function HomeScreen() {
+export function HomeScreen({ messages }: { messages: any }) {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View>
           <Text style={styles.eyebrow}>CEV MAINTENANCE</Text>
-          <Text style={styles.title}>Tổng quan bảo trì</Text>
-          <Text style={styles.subtitle}>Theo dõi công việc, thiết bị và lịch bảo trì trong một nơi.</Text>
+          <Text style={styles.title}>{messages.home.title}</Text>
+          <Text style={styles.subtitle}>{messages.home.subtitle}</Text>
         </View>
         <View style={styles.avatar}><Ionicons name="person" size={22} color={colors.primary} /></View>
       </View>
 
       <View style={styles.grid}>
-        <StatCard label="Công việc mở" value="12" note="3 việc ưu tiên cao" />
-        <StatCard label="Quá hạn" value="2" note="Cần xử lý hôm nay" />
-        <StatCard label="PM hôm nay" value="5" note="2 việc đã hoàn thành" />
-        <StatCard label="Thiết bị dừng" value="1" note="Máy ép PR-03" />
+        <StatCard label={messages.home.openWork} value="12" note={messages.home.openWorkNote} />
+        <StatCard label={messages.home.overdue} value="2" note={messages.home.overdueNote} />
+        <StatCard label={messages.home.pmToday} value="5" note={messages.home.pmTodayNote} />
+        <StatCard label={messages.home.stoppedEquipment} value="1" note={messages.home.stoppedEquipmentNote} />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Công việc cần chú ý</Text>
+        <Text style={styles.sectionTitle}>{messages.home.attention}</Text>
         {[
-          ['WO-1028', 'Kiểm tra tiếng ồn bất thường', 'Máy dập ST-02'],
-          ['WO-1027', 'Thay lọc khí định kỳ', 'Máy nén khí AC-01'],
-          ['WO-1026', 'Kiểm tra rò dầu', 'Máy ép PR-03'],
+          ['WO-1028', messages.home.task1, messages.home.asset1],
+          ['WO-1027', messages.home.task2, messages.home.asset2],
+          ['WO-1026', messages.home.task3, messages.home.asset3],
         ].map(([code, title, asset]) => (
           <View key={code} style={styles.row}>
             <View style={styles.rowIcon}><Ionicons name="construct-outline" size={20} color={colors.primary} /></View>
