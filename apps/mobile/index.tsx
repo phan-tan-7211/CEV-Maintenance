@@ -8,7 +8,8 @@ async function loadIconFont() {
     const source = 'url("/Ionicons.ttf") format("truetype")';
     const fonts = [new FontFace('Ionicons', source), new FontFace('ionicons', source)];
     const loaded = await Promise.all(fonts.map((font) => font.load()));
-    loaded.forEach((font) => document.fonts.add(font));
+    const fontSet = document.fonts as unknown as { add: (font: FontFace) => void };
+    loaded.forEach((font) => fontSet.add(font));
     return;
   }
 
