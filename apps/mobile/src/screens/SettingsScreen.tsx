@@ -13,6 +13,7 @@ export function SettingsScreen({ locale, onChangeLocale, messages }: Props) {
   const options = [
     { key: 'vi' as const, label: messages.settings.vietnamese, code: 'VI' },
     { key: 'en' as const, label: messages.settings.english, code: 'EN' },
+    { key: 'ko' as const, label: messages.settings.korean, code: 'KO' },
   ];
 
   return (
@@ -44,15 +45,6 @@ export function SettingsScreen({ locale, onChangeLocale, messages }: Props) {
             </TouchableOpacity>
           );
         })}
-
-        <View style={[styles.option, { borderBottomWidth: 0, opacity: 0.55 }]}>
-          <View style={styles.codeBadge}><Text style={styles.codeText}>KO</Text></View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.optionText}>{messages.settings.korean}</Text>
-            <Text style={styles.comingSoon}>{messages.settings.comingSoon}</Text>
-          </View>
-          <Ionicons name="lock-closed-outline" size={20} color={colors.muted} />
-        </View>
       </View>
     </ScrollView>
   );
@@ -71,5 +63,4 @@ const styles = StyleSheet.create({
   codeBadge: { width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   codeText: { color: colors.primary, fontSize: 12, fontWeight: '900' },
   optionText: { flex: 1, color: colors.text, fontSize: 14, fontWeight: '700' },
-  comingSoon: { color: colors.muted, fontSize: 11, marginTop: 2 },
 });
