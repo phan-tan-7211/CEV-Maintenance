@@ -1,25 +1,24 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
-import { t } from '../i18n';
 
-const groups = [
-  { icon: 'construct-outline', title: t.catalog.assets, note: 'Máy dập, máy ép, máy quấn, dây chuyền và thiết bị sản xuất' },
-  { icon: 'flash-outline', title: t.catalog.utilities, note: 'Máy nén khí, chiller, điện, khí, nước và hạ tầng nhà máy' },
-  { icon: 'hammer-outline', title: t.catalog.tooling, note: 'Jig, fixture, khuôn, đồ gá, dao cụ và dụng cụ chuyên dùng' },
-  { icon: 'speedometer-outline', title: t.catalog.measuring, note: 'Dụng cụ đo, thiết bị kiểm tra, hiệu chuẩn và MSA' },
-  { icon: 'settings-outline', title: t.catalog.spareParts, note: 'Linh kiện dự phòng, tồn kho, mức tối thiểu/tối đa và thiết bị sử dụng' },
-  { icon: 'flask-outline', title: t.catalog.consumables, note: 'Dầu, mỡ, lọc, hóa chất vệ sinh và vật tư tiêu hao' },
-  { icon: 'shield-checkmark-outline', title: t.catalog.safety, note: 'Công tắc an toàn, rèm quang, dừng khẩn và thiết bị bảo vệ máy' },
-  { icon: 'business-outline', title: t.catalog.suppliers, note: 'Đơn vị hiệu chuẩn, sửa chữa, bảo trì thuê ngoài và đánh giá năng lực' },
-] as const;
+export function CatalogScreen({ messages }: { messages: any }) {
+  const groups = [
+    { icon: 'construct-outline', title: messages.catalog.assets, note: messages.catalog.assetsNote },
+    { icon: 'flash-outline', title: messages.catalog.utilities, note: messages.catalog.utilitiesNote },
+    { icon: 'hammer-outline', title: messages.catalog.tooling, note: messages.catalog.toolingNote },
+    { icon: 'speedometer-outline', title: messages.catalog.measuring, note: messages.catalog.measuringNote },
+    { icon: 'settings-outline', title: messages.catalog.spareParts, note: messages.catalog.sparePartsNote },
+    { icon: 'flask-outline', title: messages.catalog.consumables, note: messages.catalog.consumablesNote },
+    { icon: 'shield-checkmark-outline', title: messages.catalog.safety, note: messages.catalog.safetyNote },
+    { icon: 'business-outline', title: messages.catalog.suppliers, note: messages.catalog.suppliersNote },
+  ] as const;
 
-export function CatalogScreen() {
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <Text style={styles.eyebrow}>IATF 16949</Text>
-      <Text style={styles.title}>{t.catalog.title}</Text>
-      <Text style={styles.subtitle}>{t.catalog.subtitle}</Text>
+      <Text style={styles.title}>{messages.catalog.title}</Text>
+      <Text style={styles.subtitle}>{messages.catalog.subtitle}</Text>
 
       <View style={styles.list}>
         {groups.map((item) => (
@@ -37,8 +36,8 @@ export function CatalogScreen() {
       </View>
 
       <View style={styles.infoBox}>
-        <Text style={styles.infoTitle}>Nghiệp vụ dùng chung</Text>
-        <Text style={styles.infoText}>Yêu cầu sửa chữa • Lệnh bảo trì • Bảo trì định kỳ • Kiểm tra • Sự cố • Phụ tùng sử dụng • Xác nhận sau sửa chữa • Lịch sử thiết bị</Text>
+        <Text style={styles.infoTitle}>{messages.catalog.commonProcesses}</Text>
+        <Text style={styles.infoText}>{messages.catalog.commonProcessesText}</Text>
       </View>
     </ScrollView>
   );
