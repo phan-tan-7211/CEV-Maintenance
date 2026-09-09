@@ -16,7 +16,7 @@ export function MaintenanceListScreen({ title, filter, messages, onBack }: Props
     <View style={styles.header}><TouchableOpacity onPress={onBack} style={styles.back}><Ionicons name="chevron-back" size={24} color={colors.text} /><Text style={styles.backText}>{messages.nav.maintenance}</Text></TouchableOpacity></View>
     <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load(true)} />}>
       <Text style={styles.title}>{title}</Text><Text style={styles.subtitle}>{messages.maintenance.subtitle}</Text>
-      <View style={styles.live}><View style={styles.dot}/><Text style={styles.liveText}>SUPABASE · LIVE DATA</Text></View>
+      <View style={styles.live}><View style={styles.dot}/><Text style={styles.liveText}>DATABASE · LIVE DATA</Text></View>
       {loading ? <View style={styles.loading}><ActivityIndicator color={colors.primary}/></View> : <View style={styles.list}>{rows.map((row) => <View key={row.id} style={styles.card}>
         <View style={styles.icon}><Ionicons name="calendar-outline" size={20} color={colors.primary}/></View>
         <View style={styles.body}><Text style={styles.code}>{row.code}</Text><Text style={styles.name}>{row.name}</Text><Text style={styles.meta}>{row.asset ?? '-'}</Text>{row.due ? <Text style={styles.meta}>{messages.common.nextDue}: {String(row.due).replace('T',' ').slice(0,16)}</Text> : null}{row.frequency ? <Text style={styles.meta}>Chu kỳ: {row.frequency}</Text> : null}</View>
