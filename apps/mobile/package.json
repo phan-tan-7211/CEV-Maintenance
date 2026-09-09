@@ -1,0 +1,30 @@
+{
+  "name": "cev-maintenance-mobile",
+  "private": true,
+  "version": "0.1.0",
+  "main": "index.tsx",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "start:go": "expo start",
+    "web": "expo start --web",
+    "bundle:web": "expo export --platform web --output-dir dist-web",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~6.1.2",
+    "@expo/vector-icons": "^15.0.3",
+    "expo": "~54.0.20",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-safe-area-context": "~5.6.1",
+    "react-native-web": "~0.21.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "^5.9.3"
+  }
+}

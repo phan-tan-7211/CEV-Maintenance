@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "CEV Maintenance",
+    "slug": "cev-maintenance",
+    "version": "0.1.0",
+    "scheme": "cevmaintenance",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.cev.maintenance",
+      "versionCode": 1,
+      "jsEngine": "hermes"
+    },
+    "ios": {
+      "bundleIdentifier": "com.cev.maintenance",
+      "buildNumber": "1",
+      "jsEngine": "hermes"
+    }
+  }
+}
