@@ -6,15 +6,16 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { ListScreen } from './src/screens/ListScreen';
 import { CatalogScreen } from './src/screens/CatalogScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { BackHeader } from './src/components/BackHeader';
 import { colors } from './src/theme/colors';
 import { getMessages, type Locale } from './src/i18n';
 
 type Tab = 'home' | 'work' | 'catalog' | 'maintenance' | 'profile';
-type ProfilePage = 'menu' | 'settings';
+type ChildPage = { parent: Tab; title: string } | null;
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
-  const [profilePage, setProfilePage] = useState<ProfilePage>('menu');
+  const [childPage, setChildPage] = useState<ChildPage>(null);
   const [locale, setLocale] = useState<Locale>('vi');
   const messages = useMemo(() => getMessages(locale), [locale]);
 
@@ -26,48 +27,47 @@ export default function App() {
     { key: 'profile', label: messages.nav.profile, icon: 'person-outline' },
   ];
 
-  const renderScreen = () => {
-    if (tab === 'home') return <HomeScreen messages={messages} />;
-    if (tab === 'work') {
+  const openChild = (parent: Tab, title: string) => setChildPage({ parent, title });
+  const goBack = () => setChildPage(null);
+
+  const renderChild = () => {
+    if (!childPage) return null;
+    const parentLabel = tabs.find((item) => item.key === childPage.parent)?.label ?? messages.nav.home;
+    if (childPage.parent === 'profile' && childPage.title === messages.profile.settings) {
       return (
-        <ListScreen
-          title={messages.work.title}
-          subtitle={messages.work.subtitle}
-          icon="clipboard-outline"
-          items={[messages.work.repairRequest, messages.work.openOrders, messages.work.mine, messages.work.overdue, messages.work.completed]}
-        />
+        <View style={styles.child}>
+          <BackHeader label={parentLabel} onPress={goBack} />
+          <SettingsScreen locale={locale} onChangeLocale={setLocale} messages={messages} />
+        </View>
       );
-    }
-    if (tab === 'catalog') return <CatalogScreen messages={messages} />;
-    if (tab === 'maintenance') {
-      return (
-        <ListScreen
-          title={messages.maintenance.title}
-          subtitle={messages.maintenance.subtitle}
-          icon="calendar-outline"
-          items={[messages.maintenance.today, messages.maintenance.thisWeek, messages.maintenance.upcoming, messages.maintenance.checklist, messages.maintenance.history]}
-        />
-      );
-    }
-    if (profilePage === 'settings') {
-      return <SettingsScreen locale={locale} onChangeLocale={setLocale} messages={messages} />;
     }
     return (
-      <ListScreen
-        title={messages.profile.title}
-        subtitle={messages.profile.subtitle}
-        icon="person-outline"
-        items={[messages.profile.account, messages.profile.notifications, messages.profile.settings, messages.profile.logout]}
-        onItemPress={(_, index) => {
-          if (index === 2) setProfilePage('settings');
-        }}
-      />
+      <View style={styles.child}>
+        <BackHeader label={parentLabel} onPress={goBack} />
+        <ListScreen title={childPage.title} subtitle={messages.common.childSubtitle} icon="document-text-outline" items={[]} />
+      </View>
     );
   };
 
+  const renderScreen = () => {
+    if (childPage) return renderChild();
+    if (tab === 'home') return <HomeScreen messages={messages} />;
+    if (tab === 'work') {
+      const items = [messages.work.repairRequest, messages.work.openOrders, messages.work.mine, messages.work.overdue, messages.work.completed];
+      return <ListScreen title={messages.work.title} subtitle={messages.work.subtitle} icon="clipboard-outline" items={items} onItemPress={(item) => openChild('work', item)} />;
+    }
+    if (tab === 'catalog') return <CatalogScreen messages={messages} onItemPress={(title: string) => openChild('catalog', title)} />;
+    if (tab === 'maintenance') {
+      const items = [messages.maintenance.today, messages.maintenance.thisWeek, messages.maintenance.upcoming, messages.maintenance.checklist, messages.maintenance.history];
+      return <ListScreen title={messages.maintenance.title} subtitle={messages.maintenance.subtitle} icon="calendar-outline" items={items} onItemPress={(item) => openChild('maintenance', item)} />;
+    }
+    const items = [messages.profile.account, messages.profile.notifications, messages.profile.settings, messages.profile.logout];
+    return <ListScreen title={messages.profile.title} subtitle={messages.profile.subtitle} icon="person-outline" items={items} onItemPress={(item, index) => { if (index !== 3) openChild('profile', item); }} />;
+  };
+
   const changeTab = (nextTab: Tab) => {
+    setChildPage(null);
     setTab(nextTab);
-    if (nextTab !== 'profile') setProfilePage('menu');
   };
 
   return (
@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   shell: { flex: 1, width: '100%', maxWidth: Platform.OS === 'web' ? 480 : undefined, alignSelf: 'center', backgroundColor: colors.background, borderLeftWidth: Platform.OS === 'web' ? 1 : 0, borderRightWidth: Platform.OS === 'web' ? 1 : 0, borderColor: colors.border },
   main: { flex: 1 },
+  child: { flex: 1 },
   nav: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 78, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: 'row', paddingBottom: 8 },
   navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 },
   navText: { fontSize: 11, fontWeight: '600', color: colors.muted },
