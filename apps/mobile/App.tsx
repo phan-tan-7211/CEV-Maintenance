@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import type { Session } from '@supabase/supabase-js';
 import { HomeScreen } from './src/screens/HomeScreen';
@@ -13,6 +12,7 @@ import { RecordFormScreen } from './src/screens/RecordFormScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { WorkOrderListScreen } from './src/screens/WorkOrderListScreen';
 import { MaintenanceListScreen } from './src/screens/MaintenanceListScreen';
+import { AppIcon, type AppIconName } from './src/components/AppIcon';
 import { BackHeader } from './src/components/BackHeader';
 import { colors } from './src/theme/colors';
 import { getMessages, type Locale } from './src/i18n';
@@ -46,7 +46,7 @@ export default function App() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const tabs: { key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  const tabs: { key: Tab; label: string; icon: AppIconName }[] = [
     { key: 'home', label: messages.nav.home, icon: 'home-outline' },
     { key: 'work', label: messages.nav.work, icon: 'clipboard-outline' },
     { key: 'catalog', label: messages.nav.catalog, icon: 'grid-outline' },
@@ -94,7 +94,7 @@ export default function App() {
 
   const changeTab = (nextTab: Tab) => { setRoute(null); setTab(nextTab); };
 
-  return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><View style={styles.main}>{route ? renderRoute() : renderRoot()}</View><View style={styles.nav}>{tabs.map((item) => { const active = item.key === tab; return <TouchableOpacity key={item.key} style={styles.navItem} onPress={() => changeTab(item.key)} activeOpacity={0.7}><Ionicons name={active ? (item.icon.replace('-outline', '') as keyof typeof Ionicons.glyphMap) : item.icon} size={22} color={active ? colors.primary : colors.muted} /><Text style={[styles.navText, active && styles.navTextActive]}>{item.label}</Text></TouchableOpacity>; })}</View></View></SafeAreaView>;
+  return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><View style={styles.main}>{route ? renderRoute() : renderRoot()}</View><View style={styles.nav}>{tabs.map((item) => { const active = item.key === tab; const iconName = active ? item.icon.replace('-outline', '') as AppIconName : item.icon; return <TouchableOpacity key={item.key} style={styles.navItem} onPress={() => changeTab(item.key)} activeOpacity={0.7}><AppIcon name={iconName} size={22} color={active ? colors.primary : colors.muted} /><Text style={[styles.navText, active && styles.navTextActive]}>{item.label}</Text></TouchableOpacity>; })}</View></View></SafeAreaView>;
 }
 
 const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.background }, authPage: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }, shell: { flex: 1, width: '100%', maxWidth: Platform.OS === 'web' ? 480 : undefined, alignSelf: 'center', backgroundColor: colors.background, borderLeftWidth: Platform.OS === 'web' ? 1 : 0, borderRightWidth: Platform.OS === 'web' ? 1 : 0, borderColor: colors.border }, main: { flex: 1 }, child: { flex: 1 }, nav: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 78, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: 'row', paddingBottom: 8 }, navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 }, navText: { fontSize: 11, fontWeight: '600', color: colors.muted }, navTextActive: { color: colors.primary, fontWeight: '800' } });
