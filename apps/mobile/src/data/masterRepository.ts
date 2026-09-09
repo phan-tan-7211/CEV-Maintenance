@@ -12,14 +12,7 @@ type Draft = {
 };
 
 const tableMap: Record<CatalogKey, string> = {
-  assets: 'assets',
-  utilities: 'assets',
-  tooling: 'tooling',
-  measuring: 'measuring_equipment',
-  spareParts: 'spare_parts',
-  consumables: 'maintenance_consumables',
-  safety: 'safety_equipment',
-  suppliers: 'service_suppliers',
+  assets: 'assets', utilities: 'assets', tooling: 'tooling', measuring: 'measuring_equipment', spareParts: 'spare_parts', consumables: 'maintenance_consumables', safety: 'safety_equipment', suppliers: 'service_suppliers',
 };
 
 async function ensureLocation(name?: string) {
@@ -53,7 +46,7 @@ function fromRow(category: CatalogKey, row: any): MasterRecord {
 
 export async function listMasterRecords(category: CatalogKey): Promise<MasterRecord[]> {
   const table = tableMap[category];
-  let query = supabase.from(table).select('*, locations(name)').order('code');
+  let query: any = supabase.from(table).select(category === 'suppliers' ? '*' : '*, locations(name)').order('code');
   if (category === 'assets') query = query.eq('asset_type', 'production');
   if (category === 'utilities') query = query.eq('asset_type', 'utility');
   const { data, error } = await query;
@@ -71,10 +64,9 @@ export async function saveMasterRecord(category: CatalogKey, draft: Draft, id?: 
   if (category === 'consumables') payload = { ...payload, location_id: locationId, specification: draft.specification || null, quantity: draft.quantity ?? 0, unit: draft.unit || 'EA' };
   if (category === 'safety') payload = { ...payload, location_id: locationId, equipment_type: draft.specification || null, next_inspection_date: draft.nextDue || null };
   if (category === 'suppliers') payload = { ...payload, service_type: draft.specification || null, next_evaluation_date: draft.nextDue || null, approved: true };
-
   const table = tableMap[category];
   const request = id ? supabase.from(table).update(payload).eq('id', id) : supabase.from(table).insert(payload);
-  const { data, error } = await request.select('*, locations(name)').single();
+  const { data, error } = await request.select(category === 'suppliers' ? '*' : '*, locations(name)').single();
   if (error) throw error;
   return fromRow(category, data);
 }
