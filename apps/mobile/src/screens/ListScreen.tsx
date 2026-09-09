@@ -1,21 +1,32 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
-type Props = { title: string; subtitle: string; icon: keyof typeof Ionicons.glyphMap; items: string[] };
+type Props = {
+  title: string;
+  subtitle: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  items: string[];
+  onItemPress?: (item: string, index: number) => void;
+};
 
-export function ListScreen({ title, subtitle, icon, items }: Props) {
+export function ListScreen({ title, subtitle, icon, items, onItemPress }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
       <View style={styles.card}>
         {items.map((item, index) => (
-          <View key={item} style={[styles.row, index === items.length - 1 && { borderBottomWidth: 0 }]}>
+          <TouchableOpacity
+            key={`${item}-${index}`}
+            style={[styles.row, index === items.length - 1 && { borderBottomWidth: 0 }]}
+            activeOpacity={onItemPress ? 0.7 : 1}
+            onPress={() => onItemPress?.(item, index)}
+          >
             <View style={styles.icon}><Ionicons name={icon} size={20} color={colors.primary} /></View>
             <Text style={styles.rowText}>{item}</Text>
             <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
     </ScrollView>
