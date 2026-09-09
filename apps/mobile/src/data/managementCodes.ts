@@ -1,24 +1,26 @@
 import { supabase } from '../lib/supabase';
 import type { CatalogKey } from './masterData';
 
-export const managementCodeRules = {
-  assets: { codeType: 'production_asset', prefix: 'TB', digits: 4, label: 'Thiết bị sản xuất' },
-  utilities: { codeType: 'utility_asset', prefix: 'PTB', digits: 4, label: 'Thiết bị phụ trợ' },
-  tooling: { codeType: 'tooling_jig', prefix: 'JIG', digits: 4, label: 'Jig / gá / khuôn' },
-  measuring: { codeType: 'measuring_equipment', prefix: 'TBD', digits: 4, label: 'Thiết bị đo / kiểm tra' },
+type Rule = { codeType: string; prefix: string; digits: number; label: string };
+
+export const managementCodeRules: Partial<Record<CatalogKey, Rule>> = {
+  assets: { codeType: 'asset', prefix: 'TS', digits: 4, label: 'Tài sản' },
+  locations: { codeType: 'location', prefix: 'KV', digits: 3, label: 'Khu vực / vị trí' },
   spareParts: { codeType: 'spare_part', prefix: 'PT', digits: 4, label: 'Phụ tùng thay thế' },
   consumables: { codeType: 'maintenance_consumable', prefix: 'VT', digits: 4, label: 'Vật tư bảo trì' },
-  safety: { codeType: 'safety_equipment', prefix: 'AT', digits: 4, label: 'Thiết bị an toàn' },
   suppliers: { codeType: 'service_supplier', prefix: 'NCC', digits: 4, label: 'Nhà cung cấp dịch vụ' },
-} as const satisfies Record<CatalogKey, { codeType: string; prefix: string; digits: number; label: string }>;
+  customers: { codeType: 'customer', prefix: 'KH', digits: 4, label: 'Khách hàng' },
+  meters: { codeType: 'meter', prefix: 'DH', digits: 4, label: 'Đồng hồ theo dõi' },
+  teams: { codeType: 'team', prefix: 'NH', digits: 3, label: 'Nhóm người dùng' },
+};
 
-export const reservedManagementCodeRules = {
-  productionTool: { codeType: 'production_tool', prefix: 'DC', digits: 4, label: 'Dụng cụ sản xuất' },
-  location: { codeType: 'location', prefix: 'KV', digits: 3, label: 'Khu vực / vị trí' },
-} as const;
+export function hasAutomaticManagementCode(category: CatalogKey) {
+  return Boolean(managementCodeRules[category]);
+}
 
 export function managementCodeExample(category: CatalogKey) {
   const rule = managementCodeRules[category];
+  if (!rule) return '';
   return `${rule.prefix}-${'0'.repeat(Math.max(0, rule.digits - 1))}1`;
 }
 
@@ -30,9 +32,7 @@ async function requestNextCode(codeType: string) {
 }
 
 export async function getNextManagementCode(category: CatalogKey) {
-  return requestNextCode(managementCodeRules[category].codeType);
-}
-
-export async function getNextLocationCode() {
-  return requestNextCode(reservedManagementCodeRules.location.codeType);
+  const rule = managementCodeRules[category];
+  if (!rule) throw new Error('Danh mục này không sử dụng mã quản lý tự động.');
+  return requestNextCode(rule.codeType);
 }
