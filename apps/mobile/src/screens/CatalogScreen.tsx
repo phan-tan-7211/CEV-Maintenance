@@ -1,10 +1,10 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon, type AppIconName } from '../components/AppIcon';
 import { colors } from '../theme/colors';
 import type { CatalogKey } from '../data/masterData';
 
 export function CatalogScreen({ messages, onItemPress }: { messages: any; onItemPress?: (key: CatalogKey, title: string) => void }) {
-  const groups: { key: CatalogKey; icon: keyof typeof Ionicons.glyphMap; title: string; note: string }[] = [
+  const groups: { key: CatalogKey; icon: AppIconName; title: string; note: string }[] = [
     { key: 'assets', icon: 'construct-outline', title: messages.catalog.assets, note: messages.catalog.assetsNote },
     { key: 'utilities', icon: 'flash-outline', title: messages.catalog.utilities, note: messages.catalog.utilitiesNote },
     { key: 'tooling', icon: 'hammer-outline', title: messages.catalog.tooling, note: messages.catalog.toolingNote },
@@ -23,9 +23,9 @@ export function CatalogScreen({ messages, onItemPress }: { messages: any; onItem
       <View style={styles.list}>
         {groups.map((item) => (
           <TouchableOpacity key={item.key} style={styles.card} activeOpacity={0.7} onPress={() => onItemPress?.(item.key, item.title)}>
-            <View style={styles.iconWrap}><Ionicons name={item.icon} size={22} color={colors.primary} /></View>
+            <View style={styles.iconWrap}><AppIcon name={item.icon} size={22} color={colors.primary} /></View>
             <View style={styles.cardBody}><Text style={styles.cardTitle}>{item.title}</Text><Text style={styles.cardNote}>{item.note}</Text></View>
-            <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+            <AppIcon name="chevron-forward" size={20} color={colors.muted} />
           </TouchableOpacity>
         ))}
       </View>
