@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '../components/AppIcon';
 import { StatCard } from '../components/StatCard';
 import { colors } from '../theme/colors';
 import { loadDashboard, type DashboardData } from '../data/dashboardRepository';
@@ -29,7 +29,7 @@ export function HomeScreen({ messages }: { messages: any }) {
           <Text style={styles.subtitle}>{messages.home.subtitle}</Text>
           <View style={styles.live}><View style={styles.dot} /><Text style={styles.liveText}>DATABASE · LIVE</Text></View>
         </View>
-        <View style={styles.avatar}><Ionicons name="person" size={22} color={colors.primary} /></View>
+        <View style={styles.avatar}><AppIcon name="person" size={22} color={colors.primary} /></View>
       </View>
 
       {loading ? <View style={styles.loading}><ActivityIndicator color={colors.primary} /><Text style={styles.loadingText}>Đang tải dữ liệu...</Text></View> : <>
@@ -44,9 +44,9 @@ export function HomeScreen({ messages }: { messages: any }) {
           <Text style={styles.sectionTitle}>{messages.home.attention}</Text>
           {data.attention.map((item) => (
             <View key={item.code} style={styles.row}>
-              <View style={styles.rowIcon}><Ionicons name="construct-outline" size={20} color={colors.primary} /></View>
+              <View style={styles.rowIcon}><AppIcon name="construct-outline" size={20} color={colors.primary} /></View>
               <View style={{ flex: 1 }}><Text style={styles.rowTitle}>{item.code} · {item.title}</Text><Text style={styles.rowSub}>{item.asset}</Text></View>
-              <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+              <AppIcon name="chevron-forward" size={20} color={colors.muted} />
             </View>
           ))}
           {data.attention.length === 0 ? <Text style={styles.empty}>Không có công việc cần chú ý.</Text> : null}
