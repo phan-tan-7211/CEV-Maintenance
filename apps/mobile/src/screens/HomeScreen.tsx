@@ -27,7 +27,7 @@ export function HomeScreen({ messages }: { messages: any }) {
           <Text style={styles.eyebrow}>{messages.appName}</Text>
           <Text style={styles.title}>{messages.home.title}</Text>
           <Text style={styles.subtitle}>{messages.home.subtitle}</Text>
-          <View style={styles.live}><View style={styles.dot} /><Text style={styles.liveText}>SUPABASE · LIVE</Text></View>
+          <View style={styles.live}><View style={styles.dot} /><Text style={styles.liveText}>DATABASE · LIVE</Text></View>
         </View>
         <View style={styles.avatar}><Ionicons name="person" size={22} color={colors.primary} /></View>
       </View>
