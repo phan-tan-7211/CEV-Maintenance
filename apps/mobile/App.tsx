@@ -6,6 +6,7 @@ import type { Session } from '@supabase/supabase-js';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { ListScreen } from './src/screens/ListScreen';
 import { CatalogScreen } from './src/screens/CatalogScreen';
+import { CatalogHubScreen } from './src/screens/CatalogHubScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { MasterListScreen } from './src/screens/MasterListScreen';
 import { RecordDetailScreen } from './src/screens/RecordDetailScreen';
@@ -17,7 +18,7 @@ import { BackHeader } from './src/components/BackHeader';
 import { colors } from './src/theme/colors';
 import { getMessages, type Locale } from './src/i18n';
 import { supabase } from './src/lib/supabase';
-import type { CatalogKey, MasterRecord } from './src/data/masterData';
+import type { CatalogHubKey, CatalogKey, MasterRecord } from './src/data/masterData';
 import type { WorkFilter } from './src/data/workOrderRepository';
 import type { MaintenanceFilter } from './src/data/maintenanceRepository';
 
@@ -27,6 +28,7 @@ type Route =
   | { kind: 'settings' }
   | { kind: 'work'; title: string; filter: WorkFilter }
   | { kind: 'maintenance'; title: string; filter: MaintenanceFilter }
+  | { kind: 'catalogHub'; hub: CatalogHubKey; title: string }
   | { kind: 'master'; category: CatalogKey; title: string }
   | { kind: 'detail'; category: CatalogKey; title: string; record: MasterRecord }
   | { kind: 'form'; category: CatalogKey; title: string; record?: MasterRecord }
@@ -57,11 +59,14 @@ export default function App() {
   if (authLoading) return <SafeAreaView style={styles.authPage}><StatusBar style="dark" /><ActivityIndicator size="large" color={colors.primary} /></SafeAreaView>;
   if (!session) return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><AuthScreen locale={locale} onChangeLocale={setLocale} /></View></SafeAreaView>;
 
+  const openMaster = (category: CatalogKey, title: string) => setRoute({ kind: 'master', category, title });
+
   const renderRoute = () => {
     if (!route) return null;
     if (route.kind === 'settings') return <View style={styles.child}><BackHeader label={messages.nav.profile} onPress={() => setRoute(null)} /><SettingsScreen locale={locale} onChangeLocale={setLocale} messages={messages} /></View>;
     if (route.kind === 'work') return <WorkOrderListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'maintenance') return <MaintenanceListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
+    if (route.kind === 'catalogHub') return <CatalogHubScreen hub={route.hub} title={route.title} messages={messages} onBack={() => setRoute(null)} onMasterPress={openMaster} onSimplePress={(title) => setRoute({ kind: 'simple', parent: 'catalog', title })} />;
     if (route.kind === 'master') return <MasterListScreen category={route.category} title={route.title} messages={messages} onBack={() => setRoute(null)} onOpenRecord={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })} onCreate={() => setRoute({ kind: 'form', category: route.category, title: route.title })} />;
     if (route.kind === 'detail') return <RecordDetailScreen category={route.category} title={route.title} record={route.record} messages={messages} onBack={() => setRoute({ kind: 'master', category: route.category, title: route.title })} onEdit={() => setRoute({ kind: 'form', category: route.category, title: route.title, record: route.record })} />;
     if (route.kind === 'form') return <RecordFormScreen category={route.category} title={route.title} record={route.record} messages={messages} onBack={() => route.record ? setRoute({ kind: 'detail', category: route.category, title: route.title, record: route.record }) : setRoute({ kind: 'master', category: route.category, title: route.title })} onSaved={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })} />;
@@ -76,7 +81,7 @@ export default function App() {
       const filters: WorkFilter[] = ['repair','open','mine','overdue','completed'];
       return <ListScreen title={messages.work.title} subtitle={messages.work.subtitle} icon="clipboard-outline" items={items} onItemPress={(item, index) => setRoute({ kind: 'work', title: item, filter: filters[index] })} />;
     }
-    if (tab === 'catalog') return <CatalogScreen messages={messages} onItemPress={(category, title) => setRoute({ kind: 'master', category, title })} />;
+    if (tab === 'catalog') return <CatalogScreen messages={messages} onMasterPress={openMaster} onHubPress={(hub, title) => setRoute({ kind: 'catalogHub', hub, title })} />;
     if (tab === 'maintenance') {
       const items = [messages.maintenance.today, messages.maintenance.thisWeek, messages.maintenance.upcoming, messages.maintenance.checklist, messages.maintenance.history];
       return <ListScreen title={messages.maintenance.title} subtitle={messages.maintenance.subtitle} icon="calendar-outline" items={items} onItemPress={(item, index) => {
