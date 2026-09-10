@@ -6,6 +6,9 @@ import { pendingEvents } from '../offline/queue';
 import { resolveQr, suggestedAssetActions, type QrResolution } from '../data/qrRepository';
 import { scanUi, type ScanLocale } from '../i18n/scanUi';
 import { SyncStatusBadge } from '../components/SyncStatusBadge';
+import type { OfflineEvent } from '../offline/types';
+
+type AssetAction = 'view' | 'report_issue' | 'create_work_order';
 
 export type ScanScreenProps = {
   locale?: ScanLocale;
@@ -28,7 +31,7 @@ export function ScanScreen({ locale = 'vi', role, onOpenTarget, onReportIssue, o
   const refreshLocal = async () => {
     setRecent(await listRecentScans());
     const queued = await pendingEvents();
-    setSyncStatus(queued.some((e) => e.status === 'failed') ? 'failed' : queued.length ? 'pending' : 'synced');
+    setSyncStatus(queued.some((e: OfflineEvent) => e.status === 'failed') ? 'failed' : queued.length ? 'pending' : 'synced');
   };
   useEffect(() => { void refreshLocal(); }, []);
 
@@ -40,7 +43,7 @@ export function ScanScreen({ locale = 'vi', role, onOpenTarget, onReportIssue, o
   };
 
   const target = result?.target;
-  const actions = target?.kind === 'asset' ? suggestedAssetActions(role, target.status) : ['view'] as const;
+  const actions: readonly AssetAction[] = target?.kind === 'asset' ? suggestedAssetActions(role, target.status) : ['view'];
 
   return <ScrollView contentContainerStyle={{ padding:16, gap:14 }}>
     <Text style={{ fontSize:24, fontWeight:'700' }}>{t.title}</Text>
