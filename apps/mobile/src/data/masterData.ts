@@ -2,6 +2,7 @@ export type CatalogKey =
   | 'assets'
   | 'locations'
   | 'spareParts'
+  | 'consumables'
   | 'suppliers'
   | 'customers'
   | 'meters'
@@ -43,6 +44,7 @@ export type MasterRecord = {
 export type AssetGroupOption = {
   id: string;
   name: string;
+  systemKey?: string;
 };
 
 export type AssetTypeOption = {
