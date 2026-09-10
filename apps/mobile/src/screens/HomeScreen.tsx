@@ -24,7 +24,7 @@ export function HomeScreen({ messages }: { messages: any }) {
     <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load(true)} />}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.eyebrow}>{messages.appName}</Text>
+          <Text style={styles.eyebrow}>CEV · Maintenance</Text>
           <Text style={styles.title}>{messages.home.title}</Text>
           <Text style={styles.subtitle}>{messages.home.subtitle}</Text>
           <View style={styles.live}><View style={styles.dot} /><Text style={styles.liveText}>DATABASE · LIVE</Text></View>
