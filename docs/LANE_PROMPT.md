@@ -1,76 +1,65 @@
-# Lane 02 — EquipQR-style PM / Daily Check / Maintenance Execution
+# Lane 01 — EquipQR-style Admin / Catalog
 
 ## Mục tiêu
-Làm nguyên khối Preventive Maintenance + kiểm tra hằng ngày theo flow tham chiếu EquipQR, nhưng phù hợp nghiệp vụ CEV/IATF. Không làm component lẻ. Không phát triển theo CEV-CMMS cũ.
+Triển khai khối quản trị danh mục theo UX/flow tham chiếu từ EquipQR, không tiếp tục thiết kế theo CEV-CMMS cũ. Dữ liệu seed hiện tại chỉ là dữ liệu mẫu, không phải cấu trúc khóa cứng.
 
 ## Nguồn tham chiếu bắt buộc
 - Repo tham chiếu: https://github.com/Columbia-Cloudworks-LLC/EquipQR
-- Nghiên cứu các flow PM Templates, Work Orders, Daily Check-Ins, checklist execution, status/locking/mobile footer.
-- Chỉ tái tạo behavior/UX pattern; KHÔNG sao chép nguyên văn source proprietary.
+- Chỉ học flow, bố cục, trạng thái, interaction pattern; KHÔNG sao chép nguyên văn source proprietary.
 - Repo đích: phan-tan-7211/CEV-Maintenance
 - Base commit: d1864e066b4d15b3efdd7576bd9b999dd0eaedb3
 
 ## Phạm vi lane này
-1. Đánh giá schema hiện có: maintenance plans, PM checklist, work_orders, assets/type flags và dữ liệu lịch hiện có.
-2. Làm workspace PM hoàn chỉnh:
-   - danh sách template/kế hoạch PM
-   - search/filter/sort
-   - create/edit plan
-   - chọn asset
-   - chu kỳ theo ngày/tuần/tháng hoặc cấu trúc schema hiện có
-   - ngày kế tiếp
-   - active/inactive
-3. Checklist PM:
-   - item rõ ràng
-   - trạng thái pass/fail/N/A hoặc phù hợp schema hiện có
-   - note optional
-   - evidence photo optional nếu hạ tầng hiện có hỗ trợ
-4. Execution:
-   - Due/Upcoming/Overdue/Completed
-   - bắt đầu
-   - thực hiện checklist
-   - hoàn tất
-   - ghi server timestamp/user thật
-   - không fake chữ ký
-5. Daily Check-In / pre-start:
-   - chỉ áp dụng asset/type có `requires_prestart=true`
-   - flow mobile cực nhanh, mục tiêu 20–30 giây
-   - hiển thị nhiệm vụ hôm nay và lịch sử
-6. PM phải liên kết Work Order khi phù hợp, tránh tạo hệ thống song song không liên quan.
-7. Đảm bảo `requires_maintenance`, `requires_prestart` từ asset type thực sự điều khiển flow, nhưng KHÔNG hard-code tên group/type.
-8. i18n đủ VI/EN/KO.
-9. KHÔNG sửa `App.tsx` trong lane này. Tạo screen/repository/export sẵn để integration sau.
+1. Tạo workspace quản trị `Nhóm / loại tài sản` hoàn chỉnh.
+2. `asset_groups` phải quản lý động từ DB:
+   - list
+   - search
+   - create
+   - rename/edit description
+   - reorder
+   - activate/deactivate
+   - delete khi an toàn
+3. `asset_types` quản lý động theo từng group:
+   - list theo group
+   - create/edit/delete/deactivate/reorder
+   - chỉnh các flags: QR, maintenance, prestart, calibration, downtime, spare parts
+4. Seed 8 nhóm + các loại hiện có chỉ là sample/default data. Không hard-code tên nhóm trong UI.
+5. Khi xóa:
+   - nếu chưa có tham chiếu thì cho xóa thật
+   - nếu đang được asset/type tham chiếu thì UI phải giải thích rõ và ưu tiên deactivate hoặc yêu cầu chuyển liên kết trước
+   - không tự ý cascade phá lịch sử
+6. UI mobile phải cùng ngôn ngữ thiết kế với Equipment/Teams/Inventory hiện tại và pattern EquipQR: header gọn, search/action rõ, card/list, bottom sheet/dialog cho create/edit.
+7. i18n đủ VI/EN/KO. Không hard-code text nghiệp vụ mới trong component nếu có thể tránh.
+8. Kiểm tra lại Catalog/Menu để chức năng này có entry rõ ràng, nhưng KHÔNG sửa `App.tsx` trong lane này. Chỉ xuất màn hình/repository/API sẵn để lane merge tích hợp sau.
 
 ## File ownership để tránh conflict
-Ưu tiên:
-- `apps/mobile/src/data/maintenanceRepository.ts` hoặc module PM mới
-- `apps/mobile/src/screens/MaintenanceListScreen.tsx` nếu cần thay hoàn toàn
-- screen mới PM Template / PM Detail / Daily Check
-- helper/i18n riêng
-- migration mới nếu thật sự cần
+Ưu tiên tạo/sửa:
+- `apps/mobile/src/data/assetGroupRepository.ts`
+- màn hình mới riêng cho quản trị group/type
+- i18n module mới riêng nếu cần
+- test/unit helper liên quan
 
-KHÔNG sửa:
+KHÔNG sửa trong lane này:
 - `apps/mobile/App.tsx`
-- asset group/type admin
-- Inventory workspace
+- Work Orders/PM repository
 - QR/offline engine
+- Inventory workspace
 
-## IATF guardrails
-- PM evidence phải là record thực: actor + server time + result.
-- Predictive maintenance chỉ “as applicable”; không fake.
-- Không bắt 3 chữ ký cho sửa chữa thường quy.
-- Downtime/MTTR dùng dữ liệu thật nếu liên kết work order; không tự điền số giả.
-- Checklist phải cấu hình được, không copy một checklist khổng lồ cho mọi máy.
+## Yêu cầu dữ liệu
+- Đọc schema Supabase thật trước khi code.
+- Không thêm schema chỉ để phục vụ UI nếu chưa cần.
+- Nếu cần DDL thật sự, thêm migration mới trong repo; không sửa migration lịch sử.
+- Không đổi mã asset hiện hữu, không đổi legacy codes.
 
 ## Definition of Done
-- PM plan/template + execution + daily/prestart là một block dùng được.
-- Data thật từ Supabase.
-- Không hard-code group/type sample.
-- VI/EN/KO.
+- Có màn quản trị group/type dùng data thật.
+- Có CRUD + deactivate/reorder hợp lý.
+- Không hard-code 8 group sample vào UI.
+- VI/EN/KO hoạt động.
 - `npm run typecheck` pass.
 - `npm run bundle:web` pass.
 - Tạo PR về `main`, KHÔNG merge.
-- PR body ghi rõ route/wiring cần thêm ở integration.
+- Trong PR body ghi rõ file nào cần wiring ở `App.tsx` sau merge.
 
 ## Báo cáo cuối lane
-Trả về: PR URL, head SHA, flow PM, schema/migration nếu có, file sửa, test result, các điểm cần integration.
+Trả về: PR URL, head SHA, danh sách file sửa, flow UI, thay đổi DB nếu có, test result, và hướng dẫn integration 3–5 dòng.
