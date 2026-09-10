@@ -1,79 +1,65 @@
-# Lane 03 — EquipQR-style QR-first + Offline Foundation
+# Lane 01 — EquipQR-style Admin / Catalog
 
 ## Mục tiêu
-Xây nền QR-first + offline/sync cho CEV theo tinh thần EquipQR mobile workflow, nhưng triển khai phù hợp Expo/React Native. Không phát triển theo CEV-CMMS cũ và không làm UI demo giả.
+Triển khai khối quản trị danh mục theo UX/flow tham chiếu từ EquipQR, không tiếp tục thiết kế theo CEV-CMMS cũ. Dữ liệu seed hiện tại chỉ là dữ liệu mẫu, không phải cấu trúc khóa cứng.
 
 ## Nguồn tham chiếu bắt buộc
 - Repo tham chiếu: https://github.com/Columbia-Cloudworks-LLC/EquipQR
-- Nghiên cứu scan routing, equipment/work-order QR entry, offline-aware actions và mobile workflow.
-- Có thể tham khảo Trier OS về state machine/idempotency nếu cần, nhưng EquipQR là tham chiếu UX chính.
-- Chỉ tái tạo pattern/behavior; KHÔNG sao chép nguyên văn source proprietary.
+- Chỉ học flow, bố cục, trạng thái, interaction pattern; KHÔNG sao chép nguyên văn source proprietary.
 - Repo đích: phan-tan-7211/CEV-Maintenance
 - Base commit: d1864e066b4d15b3efdd7576bd9b999dd0eaedb3
 
 ## Phạm vi lane này
-1. QR resolver ổn định:
-   - nhận QR mới và legacy (`ASSET:<code>`, `TOOL:<code>`, `MEASURE:<code>` nếu còn tồn tại)
-   - resolve về asset/work order/part khi schema hỗ trợ
-   - một QR asset dẫn tới action phù hợp theo role/state
-2. Scan UX:
-   - màn scan rõ ràng
-   - nhập mã thủ công fallback
-   - recent scans nếu hữu ích
-   - xử lý not found/error/retry
-3. Offline foundation thật cho business events:
-   - dùng SQLite/local persistence phù hợp Expo, không chỉ AsyncStorage auth cache
-   - pending event queue
-   - `client_event_id` UUID/idempotency
-   - event payload/version/device timestamp/actor/status
-   - trạng thái UI: Đã đồng bộ / Chờ đồng bộ / Đồng bộ lỗi
-4. Sync engine:
-   - online detection
-   - re-auth khi cần
-   - replay theo thứ tự
-   - retry an toàn
-   - không double-submit khi response mất
-   - pull refresh sau sync
-5. Tập trung trước vào event có giá trị cao:
-   - báo sự cố / tạo work order
-   - start/hold/complete work order
-   - scan asset
-   - inventory adjustment chỉ khi có chiến lược atomic/idempotent an toàn
-6. Photos: queue chỉ giữ local path; upload rồi attach sau khi online nếu hạ tầng hiện tại cho phép.
-7. Không giả vờ “offline complete” nếu chỉ cache UI. Ghi rõ capability nào đã offline thật.
-8. i18n đủ VI/EN/KO cho trạng thái sync/scan.
-9. KHÔNG sửa `App.tsx` trong lane này. Expose ScanScreen/service/hooks để integration sau.
+1. Tạo workspace quản trị `Nhóm / loại tài sản` hoàn chỉnh.
+2. `asset_groups` phải quản lý động từ DB:
+   - list
+   - search
+   - create
+   - rename/edit description
+   - reorder
+   - activate/deactivate
+   - delete khi an toàn
+3. `asset_types` quản lý động theo từng group:
+   - list theo group
+   - create/edit/delete/deactivate/reorder
+   - chỉnh các flags: QR, maintenance, prestart, calibration, downtime, spare parts
+4. Seed 8 nhóm + các loại hiện có chỉ là sample/default data. Không hard-code tên nhóm trong UI.
+5. Khi xóa:
+   - nếu chưa có tham chiếu thì cho xóa thật
+   - nếu đang được asset/type tham chiếu thì UI phải giải thích rõ và ưu tiên deactivate hoặc yêu cầu chuyển liên kết trước
+   - không tự ý cascade phá lịch sử
+6. UI mobile phải cùng ngôn ngữ thiết kế với Equipment/Teams/Inventory hiện tại và pattern EquipQR: header gọn, search/action rõ, card/list, bottom sheet/dialog cho create/edit.
+7. i18n đủ VI/EN/KO. Không hard-code text nghiệp vụ mới trong component nếu có thể tránh.
+8. Kiểm tra lại Catalog/Menu để chức năng này có entry rõ ràng, nhưng KHÔNG sửa `App.tsx` trong lane này. Chỉ xuất màn hình/repository/API sẵn để lane merge tích hợp sau.
 
 ## File ownership để tránh conflict
-Ưu tiên tạo mới:
-- `apps/mobile/src/offline/*`
-- `apps/mobile/src/data/qrRepository.ts` / resolver tương đương
-- `apps/mobile/src/screens/ScanScreen.tsx`
-- sync status component nhỏ, reusable
-- migration mới cho idempotency/event log nếu cần
+Ưu tiên tạo/sửa:
+- `apps/mobile/src/data/assetGroupRepository.ts`
+- màn hình mới riêng cho quản trị group/type
+- i18n module mới riêng nếu cần
+- test/unit helper liên quan
 
-KHÔNG sửa:
+KHÔNG sửa trong lane này:
 - `apps/mobile/App.tsx`
-- asset group/type admin
-- PM screens/repository
-- Inventory workspace UI
+- Work Orders/PM repository
+- QR/offline engine
+- Inventory workspace
 
-## Data/safety rules
-- Supabase là canonical source.
-- SQLite là working cache + pending queue, không trở thành nguồn dữ liệu chính.
-- server timestamp là bằng chứng chính; device timestamp chỉ là metadata.
-- inventory decrement phải atomic hoặc reject khi thiếu tồn; không replay mù.
-- append-only event log được ưu tiên cho audit trail.
+## Yêu cầu dữ liệu
+- Đọc schema Supabase thật trước khi code.
+- Không thêm schema chỉ để phục vụ UI nếu chưa cần.
+- Nếu cần DDL thật sự, thêm migration mới trong repo; không sửa migration lịch sử.
+- Không đổi mã asset hiện hữu, không đổi legacy codes.
 
 ## Definition of Done
-- Có ScanScreen thực và resolver thực.
-- Có persistent offline queue + sync engine mức nền tảng, không chỉ mock.
-- Có idempotency strategy rõ ràng và migration nếu cần.
-- VI/EN/KO.
+- Có màn quản trị group/type dùng data thật.
+- Có CRUD + deactivate/reorder hợp lý.
+- Không hard-code 8 group sample vào UI.
+- VI/EN/KO hoạt động.
 - `npm run typecheck` pass.
-- `npm run bundle:web` pass; nếu SQLite native cần web fallback rõ ràng để build không gãy.
+- `npm run bundle:web` pass.
 - Tạo PR về `main`, KHÔNG merge.
-- PR body ghi rõ route/wiring/provider cần thêm ở integration.
+- Trong PR body ghi rõ file nào cần wiring ở `App.tsx` sau merge.
 
 ## Báo cáo cuối lane
-Trả về: PR URL, head SHA, flow scan, offline capability thực tế, migration/schema, file sửa, test result, các bước wiring vào App.tsx.
+Trả về: PR URL, head SHA, danh sách file sửa, flow UI, thay đổi DB nếu có, test result, và hướng dẫn integration 3–5 dòng.
