@@ -9,6 +9,8 @@ import { CatalogScreen } from './src/screens/CatalogScreen';
 import { CatalogHubScreen } from './src/screens/CatalogHubScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { MasterListScreen } from './src/screens/MasterListScreen';
+import { AssetListScreen } from './src/screens/AssetListScreen';
+import { AssetGroupFormScreen } from './src/screens/AssetGroupFormScreen';
 import { RecordDetailScreen } from './src/screens/RecordDetailScreen';
 import { RecordFormScreen } from './src/screens/RecordFormScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
@@ -30,8 +32,9 @@ type Route =
   | { kind: 'maintenance'; title: string; filter: MaintenanceFilter }
   | { kind: 'catalogHub'; hub: CatalogHubKey; title: string }
   | { kind: 'master'; category: CatalogKey; title: string }
+  | { kind: 'assetGroupForm' }
   | { kind: 'detail'; category: CatalogKey; title: string; record: MasterRecord }
-  | { kind: 'form'; category: CatalogKey; title: string; record?: MasterRecord }
+  | { kind: 'form'; category: CatalogKey; title: string; record?: MasterRecord; initialGroupId?: string; initialTypeId?: string; flowStep?: 2 | 3 }
   | null;
 
 export default function App() {
@@ -60,6 +63,7 @@ export default function App() {
   if (!session) return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><AuthScreen locale={locale} onChangeLocale={setLocale} /></View></SafeAreaView>;
 
   const openMaster = (category: CatalogKey, title: string) => setRoute({ kind: 'master', category, title });
+  const openAssetMaster = () => setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets });
 
   const renderRoute = () => {
     if (!route) return null;
@@ -67,9 +71,54 @@ export default function App() {
     if (route.kind === 'work') return <WorkOrderListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'maintenance') return <MaintenanceListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'catalogHub') return <CatalogHubScreen hub={route.hub} title={route.title} messages={messages} onBack={() => setRoute(null)} onMasterPress={openMaster} onSimplePress={(title) => setRoute({ kind: 'simple', parent: 'catalog', title })} />;
+    if (route.kind === 'master' && route.category === 'assets') {
+      return <AssetListScreen
+        messages={messages}
+        onBack={() => setRoute(null)}
+        onOpenRecord={(record) => setRoute({ kind: 'detail', category: 'assets', title: route.title, record })}
+        onCreateGroup={() => setRoute({ kind: 'assetGroupForm' })}
+        onCreateType={() => setRoute({ kind: 'form', category: 'assetTypes', title: messages.catalog.assetTypes, flowStep: 2 })}
+        onCreateAsset={() => setRoute({ kind: 'form', category: 'assets', title: messages.catalog.assets, flowStep: 3 })}
+      />;
+    }
     if (route.kind === 'master') return <MasterListScreen category={route.category} title={route.title} messages={messages} onBack={() => setRoute(null)} onOpenRecord={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })} onCreate={() => setRoute({ kind: 'form', category: route.category, title: route.title })} />;
+    if (route.kind === 'assetGroupForm') {
+      return <AssetGroupFormScreen
+        messages={messages}
+        onBack={openAssetMaster}
+        onSaved={(group) => setRoute({ kind: 'form', category: 'assetTypes', title: messages.catalog.assetTypes, initialGroupId: group.id, flowStep: 2 })}
+      />;
+    }
     if (route.kind === 'detail') return <RecordDetailScreen category={route.category} title={route.title} record={route.record} messages={messages} onBack={() => setRoute({ kind: 'master', category: route.category, title: route.title })} onEdit={() => setRoute({ kind: 'form', category: route.category, title: route.title, record: route.record })} />;
-    if (route.kind === 'form') return <RecordFormScreen category={route.category} title={route.title} record={route.record} messages={messages} onBack={() => route.record ? setRoute({ kind: 'detail', category: route.category, title: route.title, record: route.record }) : setRoute({ kind: 'master', category: route.category, title: route.title })} onSaved={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })} />;
+    if (route.kind === 'form') {
+      return <RecordFormScreen
+        category={route.category}
+        title={route.title}
+        record={route.record}
+        initialGroupId={route.initialGroupId}
+        initialTypeId={route.initialTypeId}
+        flowStep={route.flowStep}
+        messages={messages}
+        onBack={() => {
+          if (route.record) {
+            setRoute({ kind: 'detail', category: route.category, title: route.title, record: route.record });
+            return;
+          }
+          if (route.flowStep) {
+            openAssetMaster();
+            return;
+          }
+          setRoute({ kind: 'master', category: route.category, title: route.title });
+        }}
+        onSaved={(record) => {
+          if (!route.record && route.category === 'assetTypes' && route.flowStep === 2) {
+            setRoute({ kind: 'form', category: 'assets', title: messages.catalog.assets, initialGroupId: record.groupId, initialTypeId: record.id, flowStep: 3 });
+            return;
+          }
+          setRoute({ kind: 'detail', category: route.category, title: route.title, record });
+        }}
+      />;
+    }
     const parentLabel = tabs.find((item) => item.key === route.parent)?.label ?? messages.nav.home;
     return <View style={styles.child}><BackHeader label={parentLabel} onPress={() => setRoute(null)} /><ListScreen title={route.title} subtitle={messages.common.childSubtitle} icon="document-text-outline" items={[]} /></View>;
   };

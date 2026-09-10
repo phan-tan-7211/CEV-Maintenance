@@ -12,12 +12,12 @@ type Props = {
 export function CatalogScreen({ messages, onMasterPress, onHubPress }: Props) {
   const groups: { key: CatalogKey | CatalogHubKey; kind: 'master' | 'hub'; icon: keyof typeof Ionicons.glyphMap; title: string; note: string }[] = [
     { key: 'assets', kind: 'master', icon: 'cube-outline', title: messages.catalog.assets, note: messages.catalog.assetsNote },
+    { key: 'assetTypes', kind: 'master', icon: 'git-branch-outline', title: messages.catalog.assetTypes, note: messages.catalog.assetTypesNote },
     { key: 'locations', kind: 'master', icon: 'location-outline', title: messages.catalog.locations, note: messages.catalog.locationsNote },
     { key: 'inventory', kind: 'hub', icon: 'layers-outline', title: messages.catalog.inventory, note: messages.catalog.inventoryNote },
     { key: 'meters', kind: 'master', icon: 'speedometer-outline', title: messages.catalog.meters, note: messages.catalog.metersNote },
     { key: 'people', kind: 'hub', icon: 'people-outline', title: messages.catalog.peopleGroups, note: messages.catalog.peopleGroupsNote },
     { key: 'partners', kind: 'hub', icon: 'business-outline', title: messages.catalog.partners, note: messages.catalog.partnersNote },
-    { key: 'assetTypes', kind: 'master', icon: 'git-branch-outline', title: messages.catalog.assetTypes, note: messages.catalog.assetTypesNote },
   ];
 
   return (
