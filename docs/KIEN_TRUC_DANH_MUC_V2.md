@@ -2,6 +2,10 @@
 
 ## 1. Nguyên tắc
 
+CEV Maintenance dùng **EquipQR** làm tham chiếu chính cho cách tổ chức sản phẩm, navigation và workflow người dùng:
+
+`https://github.com/Columbia-Cloudworks-LLC/EquipQR`
+
 CEV không tạo thêm một danh mục cấp cao mỗi khi xuất hiện một loại máy, dụng cụ hay tài sản mới.
 
 **Một tài sản vật lý = một hồ sơ trong Danh mục Tài sản.**
@@ -28,7 +32,9 @@ Các nghiệp vụ như bảo trì, sửa chữa, kiểm tra, hiệu chuẩn, ki
 
 ## 3. Nhóm và loại tài sản
 
-Nhóm cấp cao ổn định:
+Nhóm và loại tài sản là **master data cấu hình động**. Chúng không được xem là danh sách cố định của CEV và không được hard-code vào UI.
+
+Database hiện được seed sẵn các nhóm mẫu để app có dữ liệu khởi đầu:
 
 - Thiết bị sản xuất
 - Phụ trợ / hạ tầng
@@ -39,7 +45,9 @@ Nhóm cấp cao ổn định:
 - Thiết bị an toàn
 - Khác
 
-Bên trong mỗi nhóm có **Loại tài sản** cấu hình động. Quản trị viên có thể thêm, đổi tên hoặc ngừng sử dụng loại mà không cần sửa mã nguồn ứng dụng.
+Các mục này chỉ là **dữ liệu mẫu mặc định**. Người quản trị có thể thêm nhóm mới, đổi tên, sửa mô tả, sắp xếp, ngừng sử dụng hoặc xóa khi không còn cần. Loại tài sản bên trong nhóm cũng được quản lý theo cùng nguyên tắc.
+
+Nếu một nhóm/loại đang được tài sản sử dụng, UI phải hỗ trợ chuyển tài sản sang nhóm/loại khác trước khi xóa để giữ toàn vẹn dữ liệu; không được biến nhóm mẫu thành cấu trúc khóa cứng chỉ vì đã có dữ liệu tham chiếu.
 
 Mỗi loại có thể bật/tắt các quy tắc:
 
@@ -50,7 +58,7 @@ Mỗi loại có thể bật/tắt các quy tắc:
 - Theo dõi thời gian dừng
 - Quản lý phụ tùng liên quan
 
-Ví dụ: `Máy cuốn` có thể bật bảo trì + kiểm tra trước vận hành + dừng máy + phụ tùng; `Máy tính văn phòng` chỉ cần quản lý tài sản và QR.
+Ví dụ: `Máy cuốn` có thể bật bảo trì + kiểm tra trước vận hành + dừng máy + phụ tùng; `Máy tính văn phòng` chỉ cần quản lý tài sản và QR. Đây cũng chỉ là ví dụ dữ liệu, không phải quy tắc hard-code.
 
 ## 4. Cấu trúc cha/con
 
@@ -125,6 +133,6 @@ Khi xuất hiện vật thể mới, ví dụ robot, camera kiểm tra, bàn xoa
 
 - nếu đã có Loại phù hợp → dùng loại đó;
 - nếu chưa có → thêm Loại tài sản;
-- chỉ tạo Nhóm cấp cao mới khi thật sự xuất hiện một cơ chế quản lý hoàn toàn khác.
+- nếu cách phân nhóm hiện tại không còn phù hợp → quản trị viên có thể thêm hoặc chỉnh Nhóm ngay từ master data.
 
-Không tạo thêm module hoặc tiền tố mã chỉ vì có thêm một loại vật thể.
+Không tạo thêm module hoặc tiền tố mã chỉ vì có thêm một loại vật thể. Không coi dữ liệu seed là cấu trúc cố định của hệ thống.
