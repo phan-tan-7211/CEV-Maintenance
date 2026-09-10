@@ -26,7 +26,7 @@ export type MasterRecord = {
   name: string;
   secondary: string;
   specification?: string;
-  status: 'active' | 'warning' | 'inactive' | 'retired';
+  status?: 'active' | 'warning' | 'inactive' | 'retired';
   location?: string;
   nextDue?: string;
   quantity?: number;
