@@ -43,8 +43,8 @@ export type MasterRecord = {
 
 export type AssetGroupOption = {
   id: string;
-  systemKey: string;
   name: string;
+  systemKey?: string;
 };
 
 export type AssetTypeOption = {

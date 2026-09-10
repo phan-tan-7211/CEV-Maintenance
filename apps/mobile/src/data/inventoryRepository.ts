@@ -9,9 +9,9 @@ export type InventoryPart = {
 };
 
 export async function listInventoryLocations(): Promise<InventoryLocation[]> {
-  const { data, error } = await supabase.from('locations').select('id,code,name').order('name');
+  const { data, error } = await supabase.from('locations').select('id,code,name').eq('active', true).order('name');
   if (error) throw error;
-  return (data ?? []).map((row: any) => ({ id: row.id, code: row.code, name: row.name }));
+  return (data ?? []).map((row: any) => ({ id: row.id, code: row.code ?? '', name: row.name }));
 }
 
 export async function listInventoryParts(): Promise<InventoryPart[]> {
@@ -19,12 +19,8 @@ export async function listInventoryParts(): Promise<InventoryPart[]> {
   if (error) throw error;
   return (data ?? []).map((row: any) => {
     const stocks: InventoryStockRow[] = (row.part_inventory ?? []).map((stock: any) => ({
-      id: stock.id,
-      locationId: stock.location_id,
-      locationName: stock.locations?.name ?? '-',
-      quantity: Number(stock.quantity ?? 0),
-      minQuantity: Number(stock.min_quantity ?? 0),
-      maxQuantity: stock.max_quantity == null ? undefined : Number(stock.max_quantity),
+      id: stock.id, locationId: stock.location_id, locationName: stock.locations?.name ?? '-', quantity: Number(stock.quantity ?? 0),
+      minQuantity: Number(stock.min_quantity ?? 0), maxQuantity: stock.max_quantity == null ? undefined : Number(stock.max_quantity),
     }));
     const totalQuantity = stocks.reduce((sum, stock) => sum + stock.quantity, 0);
     const totalMinQuantity = stocks.reduce((sum, stock) => sum + stock.minQuantity, 0);
@@ -37,33 +33,34 @@ export async function listInventoryParts(): Promise<InventoryPart[]> {
 }
 
 export async function createInventoryPart(input: { name: string; specification?: string; unit?: string; unitCost?: number; notes?: string; locationId?: string; quantity?: number; minQuantity?: number; maxQuantity?: number }) {
+  const name = input.name.trim();
+  if (!name) throw new Error('Tên phụ tùng là bắt buộc.');
   const code = await getNextManagementCode('spareParts');
   const { data, error } = await supabase.from('spare_parts').insert({
-    code, name: input.name.trim(), specification: input.specification?.trim() || null, unit: input.unit?.trim() || 'EA',
-    unit_cost: input.unitCost ?? null, notes: input.notes?.trim() || null, quantity: 0, min_quantity: 0, max_quantity: null, status: 'active',
+    code, name, specification: input.specification?.trim() || null, unit: input.unit?.trim() || 'EA', unit_cost: input.unitCost ?? null,
+    notes: input.notes?.trim() || null, status: 'active',
   }).select('id').single();
   if (error) throw error;
-  if (input.locationId) {
-    const { error: stockError } = await supabase.from('part_inventory').insert({
-      part_id: data.id, location_id: input.locationId, quantity: input.quantity ?? 0, min_quantity: input.minQuantity ?? 0, max_quantity: input.maxQuantity ?? null,
-    });
+  if (input.locationId && Number(input.quantity ?? 0) !== 0) {
+    await adjustInventoryStock({ partId: data.id, locationId: input.locationId, delta: Number(input.quantity ?? 0), minQuantity: input.minQuantity, maxQuantity: input.maxQuantity, reference: 'initial_stock' });
+  } else if (input.locationId) {
+    const { error: stockError } = await supabase.from('part_inventory').insert({ part_id: data.id, location_id: input.locationId, quantity: 0, min_quantity: input.minQuantity ?? 0, max_quantity: input.maxQuantity ?? null });
     if (stockError) throw stockError;
   }
   return data.id as string;
 }
 
-export async function adjustInventoryStock(input: { partId: string; locationId: string; delta: number; minQuantity?: number; maxQuantity?: number }) {
-  const { data: existing, error: fetchError } = await supabase.from('part_inventory').select('id,quantity,min_quantity,max_quantity').eq('part_id', input.partId).eq('location_id', input.locationId).maybeSingle();
-  if (fetchError) throw fetchError;
-  if (!existing) {
-    if (input.delta < 0) throw new Error('Không thể xuất kho vì vị trí này chưa có tồn kho.');
-    const { error } = await supabase.from('part_inventory').insert({ part_id: input.partId, location_id: input.locationId, quantity: input.delta, min_quantity: input.minQuantity ?? 0, max_quantity: input.maxQuantity ?? null });
-    if (error) throw error;
-    return;
-  }
-  const next = Number(existing.quantity ?? 0) + input.delta;
-  if (next < 0) throw new Error('Số lượng tồn kho không thể âm.');
-  const { error } = await supabase.from('part_inventory').update({ quantity: next, min_quantity: input.minQuantity ?? existing.min_quantity, max_quantity: input.maxQuantity ?? existing.max_quantity, updated_at: new Date().toISOString() }).eq('id', existing.id);
+export async function adjustInventoryStock(input: { partId: string; locationId: string; delta: number; minQuantity?: number; maxQuantity?: number; reference?: string }) {
+  if (!input.locationId) throw new Error('Phải chọn vị trí kho.');
+  if (!Number.isFinite(input.delta) || input.delta === 0) throw new Error('Số lượng điều chỉnh phải khác 0.');
+  const { error } = await supabase.rpc('adjust_part_stock', {
+    p_part_id: input.partId,
+    p_location_id: input.locationId,
+    p_delta: input.delta,
+    p_min_quantity: input.minQuantity ?? null,
+    p_max_quantity: input.maxQuantity ?? null,
+    p_reference: input.reference ?? null,
+  });
   if (error) throw error;
 }
 
