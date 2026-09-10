@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, Touc
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import type { AssetGroupOption } from '../data/masterData';
-import { createAssetGroup } from '../data/masterRepository';
+import { createAssetGroup } from '../data/assetGroupRepository';
 
 type Props = {
   messages: any;
