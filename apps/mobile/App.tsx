@@ -8,6 +8,7 @@ import { ListScreen } from './src/screens/ListScreen';
 import { CatalogScreen } from './src/screens/CatalogScreen';
 import { CatalogHubScreen } from './src/screens/CatalogHubScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { MenuScreen } from './src/screens/MenuScreen';
 import { MasterListScreen } from './src/screens/MasterListScreen';
 import { AssetListScreen } from './src/screens/AssetListScreen';
 import { AssetFormScreen } from './src/screens/AssetFormScreen';
@@ -20,6 +21,7 @@ import { MaintenanceListScreen } from './src/screens/MaintenanceListScreen';
 import { BackHeader } from './src/components/BackHeader';
 import { colors } from './src/theme/colors';
 import { getMessages, type Locale } from './src/i18n';
+import { getAppUi } from './src/i18n/appUi';
 import { supabase } from './src/lib/supabase';
 import type { CatalogHubKey, CatalogKey, MasterRecord } from './src/data/masterData';
 import type { WorkFilter } from './src/data/workOrderRepository';
@@ -48,6 +50,7 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const messages = useMemo(() => getMessages(locale), [locale]);
+  const ui = useMemo(() => getAppUi(locale), [locale]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { setSession(data.session); setAuthLoading(false); });
@@ -64,7 +67,7 @@ export default function App() {
     { key: 'work', label: messages.nav.work, icon: 'clipboard-outline' },
     { key: 'catalog', label: messages.nav.catalog, icon: 'grid-outline' },
     { key: 'maintenance', label: messages.nav.maintenance, icon: 'calendar-outline' },
-    { key: 'profile', label: messages.nav.profile, icon: 'person-outline' },
+    { key: 'profile', label: ui.bottom.menu, icon: 'menu-outline' },
   ];
 
   if (authLoading) return <SafeAreaView style={styles.authPage}><StatusBar style="dark" /><ActivityIndicator size="large" color={colors.primary} /></SafeAreaView>;
@@ -78,9 +81,11 @@ export default function App() {
     setRoute({ kind: 'master', category, title });
   };
 
+  const changeTab = (nextTab: Tab) => { setRoute(null); setTab(nextTab); };
+
   const renderRoute = () => {
     if (!route) return null;
-    if (route.kind === 'settings') return <View style={styles.child}><BackHeader label={messages.nav.profile} onPress={() => setRoute(null)} /><SettingsScreen locale={locale} onChangeLocale={setLocale} messages={messages} /></View>;
+    if (route.kind === 'settings') return <View style={styles.child}><BackHeader label={ui.bottom.menu} onPress={() => changeTab('profile')} /><SettingsScreen locale={locale} onChangeLocale={setLocale} messages={messages} /></View>;
     if (route.kind === 'work') return <WorkOrderListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'maintenance') return <MaintenanceListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'catalogHub') return <CatalogHubScreen hub={route.hub} title={route.title} messages={messages} onBack={() => setRoute(null)} onMasterPress={openMaster} onSimplePress={(title) => setRoute({ kind: 'simple', parent: 'catalog', title })} />;
@@ -130,7 +135,7 @@ export default function App() {
   };
 
   const renderRoot = () => {
-    if (tab === 'home') return <HomeScreen messages={messages} />;
+    if (tab === 'home') return <HomeScreen messages={messages} brand={ui.brand} />;
     if (tab === 'work') {
       const items = [messages.work.repairRequest, messages.work.openOrders, messages.work.mine, messages.work.overdue, messages.work.completed];
       const filters: WorkFilter[] = ['repair','open','mine','overdue','completed'];
@@ -144,28 +149,29 @@ export default function App() {
         else setRoute({ kind: 'maintenance', title: item, filter: (['today','week','upcoming','upcoming','history'] as MaintenanceFilter[])[index] });
       }} />;
     }
-    const items = [messages.profile.account, messages.profile.notifications, messages.profile.settings, messages.profile.logout];
-    return <ListScreen title={messages.profile.title} subtitle={`${messages.profile.subtitle}\n${session.user.email ?? ''}`} icon="person-outline" items={items} onItemPress={async (item, index) => {
-      if (index === 2) setRoute({ kind: 'settings' });
-      else if (index === 3) await supabase.auth.signOut();
-      else setRoute({ kind: 'simple', parent: 'profile', title: item });
-    }} />;
+    return <MenuScreen
+      copy={ui.menu}
+      email={session.user.email}
+      onCatalog={() => changeTab('catalog')}
+      onMaintenance={() => changeTab('maintenance')}
+      onSettings={() => setRoute({ kind: 'settings' })}
+      onAccount={() => setRoute({ kind: 'simple', parent: 'profile', title: messages.profile.account })}
+      onSignOut={() => { void supabase.auth.signOut(); }}
+    />;
   };
 
-  const changeTab = (nextTab: Tab) => { setRoute(null); setTab(nextTab); };
-
   const bottomItems: { key: BottomNavKey; label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }[] = [
-    { key: 'dashboard', label: 'Trang chủ', icon: 'home-outline', onPress: () => changeTab('home') },
-    { key: 'scan', label: 'Quét mã', icon: 'scan-outline', onPress: () => { setTab('home'); setRoute({ kind: 'simple', parent: 'home', title: 'Quét QR' }); } },
-    { key: 'equipment', label: 'Thiết bị', icon: 'cube-outline', onPress: () => { setTab('catalog'); setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets }); } },
-    { key: 'inventory', label: 'Kho', icon: 'business-outline', onPress: () => { setTab('catalog'); setRoute({ kind: 'catalogHub', hub: 'inventory', title: 'Kho & phụ tùng' }); } },
-    { key: 'orders', label: 'Công việc', icon: 'clipboard-outline', onPress: () => changeTab('work') },
-    { key: 'menu', label: 'Menu', icon: 'menu-outline', onPress: () => changeTab('catalog') },
+    { key: 'dashboard', label: ui.bottom.home, icon: 'home-outline', onPress: () => changeTab('home') },
+    { key: 'scan', label: ui.bottom.scan, icon: 'scan-outline', onPress: () => { setTab('home'); setRoute({ kind: 'simple', parent: 'home', title: ui.bottom.scan }); } },
+    { key: 'equipment', label: ui.bottom.equipment, icon: 'cube-outline', onPress: () => { setTab('catalog'); setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets }); } },
+    { key: 'inventory', label: ui.bottom.inventory, icon: 'business-outline', onPress: () => { setTab('catalog'); setRoute({ kind: 'catalogHub', hub: 'inventory', title: messages.catalog.inventory }); } },
+    { key: 'orders', label: ui.bottom.work, icon: 'clipboard-outline', onPress: () => changeTab('work') },
+    { key: 'menu', label: ui.bottom.menu, icon: 'menu-outline', onPress: () => changeTab('profile') },
   ];
 
   const activeBottomKey: BottomNavKey = (() => {
     if (!route && tab === 'home') return 'dashboard';
-    if (route?.kind === 'simple' && route.title === 'Quét QR') return 'scan';
+    if (route?.kind === 'simple' && route.parent === 'home') return 'scan';
     if (route?.kind === 'assetCreate') return 'equipment';
     if ((route?.kind === 'master' || route?.kind === 'detail' || route?.kind === 'form') && route.category === 'assets') return 'equipment';
     if (route?.kind === 'catalogHub' && route.hub === 'inventory') return 'inventory';
