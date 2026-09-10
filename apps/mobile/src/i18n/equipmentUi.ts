@@ -2,28 +2,20 @@ import type { Locale } from './index';
 
 export const equipmentUi = {
   vi: {
-    title: 'Thiết bị', search: 'Tìm thiết bị...', sort: 'Sắp xếp', sortName: 'Tên', sortCode: 'Mã', sortGroup: 'Nhóm',
-    filters: 'Bộ lọc thiết bị', filterDescription: 'Lọc thiết bị theo nhóm tài sản.', quickFilters: 'Bộ lọc nhanh', all: 'Tất cả',
-    clearAll: 'Xóa tất cả bộ lọc', active: 'Đang lọc', results: 'thiết bị', noEquipment: 'Chưa có thiết bị', noResults: 'Không tìm thấy thiết bị',
-    noEquipmentHint: 'Thêm thiết bị đầu tiên. Bạn có thể chọn nhóm có sẵn hoặc tạo nhóm mới ngay trong form.', noResultsHint: 'Thử thay đổi từ khóa hoặc bộ lọc.',
-    add: 'Thêm thiết bị', unclassified: 'Chưa phân loại', close: 'Đóng', ascending: 'Tăng dần', descending: 'Giảm dần'
+    title: 'Thiết bị', search: 'Tìm thiết bị...', sort: 'Sắp xếp', sortName: 'Tên', sortCode: 'Mã', sortGroup: 'Nhóm', filters: 'Bộ lọc thiết bị', filterDescription: 'Lọc thiết bị theo nhóm tài sản.', quickFilters: 'Bộ lọc nhanh', all: 'Tất cả', clearAll: 'Xóa tất cả bộ lọc', active: 'Đang lọc', results: 'thiết bị', noEquipment: 'Chưa có thiết bị', noResults: 'Không tìm thấy thiết bị', noEquipmentHint: 'Thêm thiết bị đầu tiên. Bạn có thể chọn nhóm có sẵn hoặc tạo nhóm mới ngay trong form.', noResultsHint: 'Thử thay đổi từ khóa hoặc bộ lọc.', add: 'Thêm thiết bị', unclassified: 'Chưa phân loại', close: 'Đóng', ascending: 'Tăng dần', descending: 'Giảm dần',
+    detail: { title: 'Chi tiết thiết bị', details: 'Chi tiết', work: 'Công việc', notes: 'Ghi chú', parts: 'Phụ tùng', images: 'Hình ảnh', history: 'Lịch sử', edit: 'Chỉnh sửa', qr: 'Mã QR', status: 'Trạng thái', group: 'Nhóm', type: 'Loại', location: 'Vị trí', parent: 'Tài sản cha', specification: 'Thông số', nextDue: 'Hạn tiếp theo', documents: 'Tài liệu', maintenance: 'Bảo trì', workOrders: 'Lệnh công việc', noData: 'Chưa có dữ liệu', active: 'Đang hoạt động', createWork: 'Tạo công việc', overview: 'Tổng quan', assetCode: 'Mã tài sản' },
+    form: { add: 'Thêm thiết bị', edit: 'Chỉnh sửa thiết bị', classification: 'Phân loại', info: 'Thông tin thiết bị', group: 'Nhóm tài sản', type: 'Loại tài sản', chooseGroup: 'Chọn nhóm', chooseType: 'Chọn loại', createGroup: 'Tạo nhóm mới', createType: 'Tạo loại mới', manufacturer: 'Hãng', model: 'Model', name: 'Tên thiết bị', serial: 'Serial', location: 'Vị trí', parent: 'Tài sản cha', save: 'Lưu thay đổi', create: 'Thêm thiết bị', cancel: 'Hủy', createAndSelect: 'Tạo & chọn', autoCode: 'Mã TS và QR được hệ thống cấp tự động khi lưu.', required: 'Bắt buộc' }
   },
   en: {
-    title: 'Equipment', search: 'Search equipment...', sort: 'Sort', sortName: 'Name', sortCode: 'Code', sortGroup: 'Group',
-    filters: 'Filter Equipment', filterDescription: 'Filter equipment by asset group.', quickFilters: 'Quick filters', all: 'All',
-    clearAll: 'Clear All Filters', active: 'Active', results: 'equipment', noEquipment: 'No equipment yet', noResults: 'No equipment found',
-    noEquipmentHint: 'Add your first equipment. You can select an existing group or create a new one directly in the form.', noResultsHint: 'Try changing the search term or filters.',
-    add: 'Add Equipment', unclassified: 'Unclassified', close: 'Close', ascending: 'Ascending', descending: 'Descending'
+    title: 'Equipment', search: 'Search equipment...', sort: 'Sort', sortName: 'Name', sortCode: 'Code', sortGroup: 'Group', filters: 'Filter Equipment', filterDescription: 'Filter equipment by asset group.', quickFilters: 'Quick filters', all: 'All', clearAll: 'Clear All Filters', active: 'Active', results: 'equipment', noEquipment: 'No equipment yet', noResults: 'No equipment found', noEquipmentHint: 'Add your first equipment. You can select an existing group or create a new one directly in the form.', noResultsHint: 'Try changing the search term or filters.', add: 'Add Equipment', unclassified: 'Unclassified', close: 'Close', ascending: 'Ascending', descending: 'Descending',
+    detail: { title: 'Equipment Details', details: 'Details', work: 'Work Orders', notes: 'Notes', parts: 'Parts', images: 'Images', history: 'History', edit: 'Edit', qr: 'QR Code', status: 'Status', group: 'Group', type: 'Type', location: 'Location', parent: 'Parent asset', specification: 'Specification', nextDue: 'Next due', documents: 'Documents', maintenance: 'Maintenance', workOrders: 'Work Orders', noData: 'No data yet', active: 'Active', createWork: 'Create Work Order', overview: 'Overview', assetCode: 'Asset code' },
+    form: { add: 'Add Equipment', edit: 'Edit Equipment', classification: 'Classification', info: 'Equipment Information', group: 'Asset Group', type: 'Asset Type', chooseGroup: 'Select group', chooseType: 'Select type', createGroup: 'Create new group', createType: 'Create new type', manufacturer: 'Manufacturer', model: 'Model', name: 'Equipment Name', serial: 'Serial Number', location: 'Location', parent: 'Parent Asset', save: 'Save Changes', create: 'Add Equipment', cancel: 'Cancel', createAndSelect: 'Create & Select', autoCode: 'TS code and QR are assigned automatically when saved.', required: 'Required' }
   },
   ko: {
-    title: '설비', search: '설비 검색...', sort: '정렬', sortName: '이름', sortCode: '코드', sortGroup: '그룹',
-    filters: '설비 필터', filterDescription: '자산 그룹으로 설비를 필터링합니다.', quickFilters: '빠른 필터', all: '전체',
-    clearAll: '모든 필터 지우기', active: '적용 중', results: '설비', noEquipment: '등록된 설비가 없습니다', noResults: '검색 결과가 없습니다',
-    noEquipmentHint: '첫 설비를 등록하세요. 기존 그룹을 선택하거나 등록 화면에서 새 그룹을 바로 만들 수 있습니다.', noResultsHint: '검색어나 필터를 변경해 보세요.',
-    add: '설비 추가', unclassified: '미분류', close: '닫기', ascending: '오름차순', descending: '내림차순'
+    title: '설비', search: '설비 검색...', sort: '정렬', sortName: '이름', sortCode: '코드', sortGroup: '그룹', filters: '설비 필터', filterDescription: '자산 그룹으로 설비를 필터링합니다.', quickFilters: '빠른 필터', all: '전체', clearAll: '모든 필터 지우기', active: '적용 중', results: '설비', noEquipment: '등록된 설비가 없습니다', noResults: '검색 결과가 없습니다', noEquipmentHint: '첫 설비를 등록하세요. 기존 그룹을 선택하거나 등록 화면에서 새 그룹을 바로 만들 수 있습니다.', noResultsHint: '검색어나 필터를 변경해 보세요.', add: '설비 추가', unclassified: '미분류', close: '닫기', ascending: '오름차순', descending: '내림차순',
+    detail: { title: '설비 상세', details: '상세', work: '작업지시', notes: '메모', parts: '부품', images: '사진', history: '이력', edit: '수정', qr: 'QR 코드', status: '상태', group: '그룹', type: '유형', location: '위치', parent: '상위 자산', specification: '사양', nextDue: '다음 예정일', documents: '문서', maintenance: '유지보수', workOrders: '작업지시', noData: '데이터가 없습니다', active: '사용 중', createWork: '작업지시 생성', overview: '개요', assetCode: '자산 코드' },
+    form: { add: '설비 추가', edit: '설비 수정', classification: '분류', info: '설비 정보', group: '자산 그룹', type: '자산 유형', chooseGroup: '그룹 선택', chooseType: '유형 선택', createGroup: '새 그룹 만들기', createType: '새 유형 만들기', manufacturer: '제조사', model: '모델', name: '설비명', serial: '시리얼 번호', location: '위치', parent: '상위 자산', save: '변경 저장', create: '설비 추가', cancel: '취소', createAndSelect: '생성 후 선택', autoCode: '저장 시 TS 코드와 QR이 자동 발급됩니다.', required: '필수' }
   },
 } as const;
 
-export function getEquipmentUi(locale: Locale) {
-  return equipmentUi[locale];
-}
+export function getEquipmentUi(locale: Locale) { return equipmentUi[locale]; }

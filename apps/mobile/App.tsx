@@ -11,6 +11,7 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { MasterListScreen } from './src/screens/MasterListScreen';
 import { AssetListScreen } from './src/screens/AssetListScreen';
 import { AssetFormScreen } from './src/screens/AssetFormScreen';
+import { AssetDetailScreen } from './src/screens/AssetDetailScreen';
 import { TeamsScreen } from './src/screens/TeamsScreen';
 import { RecordDetailScreen } from './src/screens/RecordDetailScreen';
 import { RecordFormScreen } from './src/screens/RecordFormScreen';
@@ -57,8 +58,7 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { setSession(data.session); setAuthLoading(false); });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setAuthLoading(false);
+      setSession(nextSession); setAuthLoading(false);
       if (!nextSession) { setRoute(null); setTab('home'); setSidebarOpen(false); }
     });
     return () => listener.subscription.unsubscribe();
@@ -76,13 +76,9 @@ export default function App() {
   if (!session) return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><AuthScreen locale={locale} onChangeLocale={setLocale} /></View></SafeAreaView>;
 
   const openMaster = (category: CatalogKey, title: string) => {
-    if (category === 'teams') {
-      setRoute({ kind: 'teams' });
-      return;
-    }
+    if (category === 'teams') return setRoute({ kind: 'teams' });
     setRoute({ kind: 'master', category, title });
   };
-
   const changeTab = (nextTab: Tab) => { setRoute(null); setTab(nextTab); };
 
   const renderRoute = () => {
@@ -92,41 +88,13 @@ export default function App() {
     if (route.kind === 'maintenance') return <MaintenanceListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'catalogHub') return <CatalogHubScreen hub={route.hub} title={route.title} messages={messages} onBack={() => setRoute(null)} onMasterPress={openMaster} onSimplePress={(title) => setRoute({ kind: 'simple', parent: 'catalog', title })} />;
 
-    if (route.kind === 'teams') {
-      return <TeamsScreen
-        onBack={() => setRoute({ kind: 'catalogHub', hub: 'people', title: messages.catalog.peopleGroups })}
-        onOpenTeam={(team) => setRoute({
-          kind: 'detail',
-          category: 'teams',
-          title: messages.catalogHub.teams,
-          record: {
-            id: team.id,
-            code: team.code,
-            name: team.name,
-            secondary: team.description ?? '-',
-            specification: team.description,
-            status: team.active ? 'active' : 'inactive',
-          },
-        })}
-      />;
-    }
+    if (route.kind === 'teams') return <TeamsScreen onBack={() => setRoute({ kind: 'catalogHub', hub: 'people', title: messages.catalog.peopleGroups })} onOpenTeam={(team) => setRoute({ kind: 'detail', category: 'teams', title: messages.catalogHub.teams, record: { id: team.id, code: team.code, name: team.name, secondary: team.description ?? '-', specification: team.description, status: team.active ? 'active' : 'inactive' } })} />;
 
-    if (route.kind === 'master' && route.category === 'assets') {
-      return <AssetListScreen
-        messages={messages}
-        onBack={() => setRoute(null)}
-        onOpenRecord={(record) => setRoute({ kind: 'detail', category: 'assets', title: route.title, record })}
-        onCreateAsset={() => setRoute({ kind: 'assetCreate' })}
-      />;
-    }
+    if (route.kind === 'master' && route.category === 'assets') return <AssetListScreen messages={messages} locale={locale} onBack={() => setRoute(null)} onOpenRecord={(record) => setRoute({ kind: 'detail', category: 'assets', title: route.title, record })} onCreateAsset={() => setRoute({ kind: 'assetCreate' })} />;
+    if (route.kind === 'assetCreate') return <AssetFormScreen messages={messages} locale={locale} onBack={() => setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets })} onSaved={(record) => setRoute({ kind: 'detail', category: 'assets', title: messages.catalog.assets, record })} />;
 
-    if (route.kind === 'assetCreate') {
-      return <AssetFormScreen
-        messages={messages}
-        onBack={() => setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets })}
-        onSaved={(record) => setRoute({ kind: 'detail', category: 'assets', title: messages.catalog.assets, record })}
-      />;
-    }
+    if (route.kind === 'detail' && route.category === 'assets') return <AssetDetailScreen record={route.record} locale={locale} onBack={() => setRoute({ kind: 'master', category: 'assets', title: route.title })} onEdit={() => setRoute({ kind: 'form', category: 'assets', title: route.title, record: route.record })} onCreateWork={() => { setTab('work'); setRoute({ kind: 'work', title: messages.work.repairRequest, filter: 'repair' }); }} />;
+    if (route.kind === 'form' && route.category === 'assets') return <AssetFormScreen messages={messages} locale={locale} record={route.record} onBack={() => route.record ? setRoute({ kind: 'detail', category: 'assets', title: route.title, record: route.record }) : setRoute({ kind: 'master', category: 'assets', title: route.title })} onSaved={(record) => setRoute({ kind: 'detail', category: 'assets', title: route.title, record })} />;
 
     if (route.kind === 'master') return <MasterListScreen category={route.category} title={route.title} messages={messages} onBack={() => setRoute(null)} onOpenRecord={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })} onCreate={() => setRoute({ kind: 'form', category: route.category, title: route.title })} />;
     if (route.kind === 'detail') return <RecordDetailScreen category={route.category} title={route.title} record={route.record} messages={messages} onBack={() => route.category === 'teams' ? setRoute({ kind: 'teams' }) : setRoute({ kind: 'master', category: route.category, title: route.title })} onEdit={() => setRoute({ kind: 'form', category: route.category, title: route.title, record: route.record })} />;
@@ -146,10 +114,7 @@ export default function App() {
     if (tab === 'catalog') return <CatalogScreen messages={messages} onMasterPress={openMaster} onHubPress={(hub, title) => setRoute({ kind: 'catalogHub', hub, title })} />;
     if (tab === 'maintenance') {
       const items = [messages.maintenance.today, messages.maintenance.thisWeek, messages.maintenance.upcoming, messages.maintenance.checklist, messages.maintenance.history];
-      return <ListScreen title={messages.maintenance.title} subtitle={messages.maintenance.subtitle} icon="calendar-outline" items={items} onItemPress={(item, index) => {
-        if (index === 3) setRoute({ kind: 'simple', parent: 'maintenance', title: item });
-        else setRoute({ kind: 'maintenance', title: item, filter: (['today','week','upcoming','upcoming','history'] as MaintenanceFilter[])[index] });
-      }} />;
+      return <ListScreen title={messages.maintenance.title} subtitle={messages.maintenance.subtitle} icon="calendar-outline" items={items} onItemPress={(item, index) => index === 3 ? setRoute({ kind: 'simple', parent: 'maintenance', title: item }) : setRoute({ kind: 'maintenance', title: item, filter: (['today','week','upcoming','upcoming','history'] as MaintenanceFilter[])[index] })} />;
     }
     return <ListScreen title={messages.profile.title} subtitle={`${messages.profile.subtitle}\n${session.user.email ?? ''}`} icon="person-outline" items={[messages.profile.account, messages.profile.settings]} onItemPress={(_item, index) => index === 0 ? setRoute({ kind: 'simple', parent: 'profile', title: messages.profile.account }) : setRoute({ kind: 'settings' })} />;
   };
@@ -183,116 +148,28 @@ export default function App() {
     if (route?.kind === 'catalogHub' && route.hub === 'inventory') return 'inventory';
     if (route?.kind === 'master' && (route.category === 'spareParts' || route.category === 'consumables')) return 'inventory';
     if (route?.kind === 'work' || (!route && tab === 'work')) return 'orders';
-    return sidebarOpen ? 'menu' : 'menu';
+    return 'menu';
   })();
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar style="dark" />
       <View style={styles.shell}>
-        <AppTopBar
-          brand={ui.brand}
-          title={currentTitle}
-          onOpenMenu={() => setSidebarOpen(true)}
-          onOpenAccount={() => { setTab('profile'); setRoute({ kind: 'simple', parent: 'profile', title: messages.profile.account }); }}
-        />
+        <AppTopBar brand={ui.brand} title={currentTitle} onOpenMenu={() => setSidebarOpen(true)} onOpenAccount={() => { setTab('profile'); setRoute({ kind: 'simple', parent: 'profile', title: messages.profile.account }); }} />
         <View style={styles.main}>{route ? renderRoute() : renderRoot()}</View>
         <View style={styles.nav} accessibilityRole="tablist">
           {bottomItems.map((item) => {
             const active = activeBottomKey === item.key;
-            return (
-              <TouchableOpacity
-                key={item.key}
-                style={styles.navItem}
-                onPress={item.onPress}
-                activeOpacity={0.72}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: active }}
-                accessibilityLabel={item.label}
-              >
-                <View style={[styles.navIconWrap, active && styles.navIconWrapActive]}>
-                  <Ionicons name={item.icon} size={21} color={active ? colors.primary : colors.muted} />
-                  {active ? <View style={styles.activeDot} /> : null}
-                </View>
-                <Text numberOfLines={1} style={[styles.navText, active && styles.navTextActive]}>{item.label}</Text>
-              </TouchableOpacity>
-            );
+            return <TouchableOpacity key={item.key} style={styles.navItem} onPress={item.onPress} activeOpacity={0.72} accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={item.label}><View style={[styles.navIconWrap, active && styles.navIconWrapActive]}><Ionicons name={item.icon} size={21} color={active ? colors.primary : colors.muted} />{active ? <View style={styles.activeDot} /> : null}</View><Text numberOfLines={1} style={[styles.navText, active && styles.navTextActive]}>{item.label}</Text></TouchableOpacity>;
           })}
         </View>
-
-        <AppSidebarSheet
-          visible={sidebarOpen}
-          brand={ui.brand}
-          email={session.user.email}
-          sectionLabels={ui.shell.sections}
-          labels={ui.shell}
-          onClose={() => setSidebarOpen(false)}
-          onEquipment={() => { setTab('catalog'); setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets }); }}
-          onLocations={() => { setTab('catalog'); setRoute({ kind: 'master', category: 'locations', title: messages.catalog.locations }); }}
-          onInventory={() => { setTab('catalog'); setRoute({ kind: 'catalogHub', hub: 'inventory', title: messages.catalog.inventory }); }}
-          onParts={() => { setTab('catalog'); setRoute({ kind: 'master', category: 'spareParts', title: messages.catalogHub.spareParts }); }}
-          onDashboard={() => changeTab('home')}
-          onWorkOrders={() => changeTab('work')}
-          onMaintenance={() => changeTab('maintenance')}
-          onDailyChecks={() => { setTab('maintenance'); setRoute({ kind: 'simple', parent: 'maintenance', title: ui.shell.dailyChecks }); }}
-          onReports={() => { setTab('home'); setRoute({ kind: 'simple', parent: 'home', title: ui.shell.reports }); }}
-          onTeams={() => { setTab('catalog'); setRoute({ kind: 'teams' }); }}
-          onCatalog={() => changeTab('catalog')}
-          onSettings={() => setRoute({ kind: 'settings' })}
-          onAccount={() => { setTab('profile'); setRoute({ kind: 'simple', parent: 'profile', title: messages.profile.account }); }}
-          onSignOut={() => { void supabase.auth.signOut(); }}
-        />
+        <AppSidebarSheet visible={sidebarOpen} brand={ui.brand} email={session.user.email} sectionLabels={ui.shell.sections} labels={ui.shell} onClose={() => setSidebarOpen(false)} onEquipment={() => { setTab('catalog'); setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets }); }} onLocations={() => { setTab('catalog'); setRoute({ kind: 'master', category: 'locations', title: messages.catalog.locations }); }} onInventory={() => { setTab('catalog'); setRoute({ kind: 'catalogHub', hub: 'inventory', title: messages.catalog.inventory }); }} onParts={() => { setTab('catalog'); setRoute({ kind: 'master', category: 'spareParts', title: messages.catalogHub.spareParts }); }} onDashboard={() => changeTab('home')} onWorkOrders={() => changeTab('work')} onMaintenance={() => changeTab('maintenance')} onDailyChecks={() => { setTab('maintenance'); setRoute({ kind: 'simple', parent: 'maintenance', title: ui.shell.dailyChecks }); }} onReports={() => { setTab('home'); setRoute({ kind: 'simple', parent: 'home', title: ui.shell.reports }); }} onTeams={() => { setTab('catalog'); setRoute({ kind: 'teams' }); }} onCatalog={() => changeTab('catalog')} onSettings={() => setRoute({ kind: 'settings' })} onAccount={() => { setTab('profile'); setRoute({ kind: 'simple', parent: 'profile', title: messages.profile.account }); }} onSignOut={() => { void supabase.auth.signOut(); }} />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  authPage: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  shell: { flex: 1, width: '100%', maxWidth: Platform.OS === 'web' ? 480 : undefined, alignSelf: 'center', backgroundColor: colors.background, borderLeftWidth: Platform.OS === 'web' ? 1 : 0, borderRightWidth: Platform.OS === 'web' ? 1 : 0, borderColor: colors.border },
-  main: { flex: 1, paddingBottom: 68 },
-  child: { flex: 1 },
-  nav: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    minHeight: 64,
-    backgroundColor: Platform.OS === 'web' ? 'rgba(255,255,255,0.96)' : colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    justifyContent: 'space-around',
-    paddingHorizontal: 6,
-    paddingTop: 4,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  navItem: {
-    flex: 1,
-    minWidth: 48,
-    minHeight: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-    paddingVertical: 5,
-  },
-  navIconWrap: {
-    position: 'relative',
-    width: 34,
-    height: 32,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navIconWrapActive: { backgroundColor: colors.primarySoft, transform: [{ scale: 1.04 }] },
-  activeDot: { position: 'absolute', top: 2, left: 15, width: 4, height: 4, borderRadius: 2, backgroundColor: colors.primary },
-  navText: { marginTop: 1, fontSize: 10, fontWeight: '600', color: colors.muted },
-  navTextActive: { color: colors.primary, fontWeight: '800' },
+  safe: { flex: 1, backgroundColor: colors.background }, authPage: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }, shell: { flex: 1, width: '100%', maxWidth: Platform.OS === 'web' ? 480 : undefined, alignSelf: 'center', backgroundColor: colors.background, borderLeftWidth: Platform.OS === 'web' ? 1 : 0, borderRightWidth: Platform.OS === 'web' ? 1 : 0, borderColor: colors.border }, main: { flex: 1, paddingBottom: 68 }, child: { flex: 1 },
+  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: 64, backgroundColor: Platform.OS === 'web' ? 'rgba(255,255,255,0.96)' : colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: 'row', alignItems: 'stretch', justifyContent: 'space-around', paddingHorizontal: 6, paddingTop: 4, paddingBottom: Platform.OS === 'ios' ? 8 : 4, shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 8 }, navItem: { flex: 1, minWidth: 48, minHeight: 56, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, paddingVertical: 5 }, navIconWrap: { position: 'relative', width: 34, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center' }, navIconWrapActive: { backgroundColor: colors.primarySoft, transform: [{ scale: 1.04 }] }, activeDot: { position: 'absolute', top: 2, left: 15, width: 4, height: 4, borderRadius: 2, backgroundColor: colors.primary }, navText: { marginTop: 1, fontSize: 10, fontWeight: '600', color: colors.muted }, navTextActive: { color: colors.primary, fontWeight: '800' },
 });
