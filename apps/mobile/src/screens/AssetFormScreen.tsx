@@ -12,8 +12,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import type { AssetGroupOption, AssetTypeOption, MasterRecord } from '../data/masterData';
-import { createAssetGroup, createAssetType } from '../data/assetGroupRepository';
-import { listAssetGroups, listAssetTypes, saveMasterRecord } from '../data/masterRepository';
+import { createAssetGroup, createAssetType, saveEquipment } from '../data/assetGroupRepository';
+import { getMasterRecord, listAssetGroups, listAssetTypes } from '../data/masterRepository';
 
 type Props = {
   messages: any;
@@ -45,26 +45,11 @@ export function AssetFormScreen({ messages, record, onBack, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
   const [creatingInline, setCreatingInline] = useState(false);
 
-  const loadGroups = async () => {
-    const data = await listAssetGroups();
-    setGroups(data);
-  };
+  const loadGroups = async () => setGroups(await listAssetGroups());
+  const loadTypes = async (nextGroupId: string) => setTypes(nextGroupId ? await listAssetTypes(nextGroupId) : []);
 
-  const loadTypes = async (nextGroupId: string) => {
-    if (!nextGroupId) {
-      setTypes([]);
-      return;
-    }
-    setTypes(await listAssetTypes(nextGroupId));
-  };
-
-  useEffect(() => {
-    loadGroups().catch(() => setGroups([]));
-  }, []);
-
-  useEffect(() => {
-    loadTypes(groupId).catch(() => setTypes([]));
-  }, [groupId]);
+  useEffect(() => { loadGroups().catch(() => setGroups([])); }, []);
+  useEffect(() => { loadTypes(groupId).catch(() => setTypes([])); }, [groupId]);
 
   useEffect(() => {
     if (!record && manufacturer.trim() && model.trim() && !name.trim()) {
@@ -110,10 +95,7 @@ export function AssetFormScreen({ messages, record, onBack, onSaved }: Props) {
   };
 
   const createTypeInline = async () => {
-    if (!groupId) {
-      Alert.alert('Chọn nhóm trước');
-      return;
-    }
+    if (!groupId) return Alert.alert('Chọn nhóm trước');
     if (!newTypeName.trim()) return;
     setCreatingInline(true);
     try {
@@ -137,16 +119,19 @@ export function AssetFormScreen({ messages, record, onBack, onSaved }: Props) {
     if (!name.trim()) return Alert.alert('Tên thiết bị là bắt buộc');
     setSaving(true);
     try {
-      const saved = await saveMasterRecord('assets', {
+      const id = await saveEquipment({
+        id: record?.id,
         code: record?.code,
         name,
-        specification: model,
+        manufacturer,
+        model,
+        serial,
         location,
         groupId,
         typeId,
         parentCode,
-      }, record?.id);
-      onSaved(saved);
+      });
+      onSaved(await getMasterRecord('assets', id));
     } catch (error: any) {
       Alert.alert(messages.common.saveError ?? 'Không thể lưu dữ liệu', error?.message ?? String(error));
     } finally {
