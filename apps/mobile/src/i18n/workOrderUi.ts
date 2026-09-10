@@ -1,0 +1,15 @@
+import type { Locale } from './index';
+
+export const workOrderUi = {
+  vi: {
+    title:'Công việc', search:'Tìm công việc...', add:'Tạo công việc', filters:'Bộ lọc', sort:'Sắp xếp', all:'Tất cả', open:'Đang mở', repair:'Sửa chữa', mine:'Của tôi', overdue:'Quá hạn', completed:'Hoàn thành', noData:'Chưa có công việc', noResults:'Không tìm thấy công việc', priority:'Ưu tiên', status:'Trạng thái', asset:'Thiết bị', due:'Hạn', description:'Mô tả', type:'Loại công việc', corrective:'Sửa chữa', preventive:'Bảo trì', inspection:'Kiểm tra', low:'Thấp', medium:'Trung bình', high:'Cao', urgent:'Khẩn cấp', create:'Tạo công việc', cancel:'Hủy', details:'Chi tiết', activity:'Hoạt động', rootCause:'Nguyên nhân gốc', correctiveAction:'Hành động khắc phục', downtime:'Dừng máy (phút)', verified:'Đã xác nhận sau sửa chữa', start:'Bắt đầu', hold:'Tạm dừng', complete:'Hoàn thành', reopen:'Mở lại', editCloseout:'Cập nhật kết quả sửa chữa', save:'Lưu', selectAsset:'Chọn thiết bị', noAsset:'Không gắn thiết bị', quick:'Bộ lọc nhanh', active:'Đang lọc', newest:'Mới nhất', oldest:'Cũ nhất', dueSoon:'Hạn gần nhất', created:'Tạo lúc'
+  },
+  en: {
+    title:'Work Orders', search:'Search work orders...', add:'Create Work Order', filters:'Filters', sort:'Sort', all:'All', open:'Open', repair:'Repair', mine:'Mine', overdue:'Overdue', completed:'Completed', noData:'No work orders yet', noResults:'No work orders found', priority:'Priority', status:'Status', asset:'Equipment', due:'Due', description:'Description', type:'Work type', corrective:'Corrective', preventive:'Preventive', inspection:'Inspection', low:'Low', medium:'Medium', high:'High', urgent:'Urgent', create:'Create Work Order', cancel:'Cancel', details:'Details', activity:'Activity', rootCause:'Root cause', correctiveAction:'Corrective action', downtime:'Downtime (minutes)', verified:'Post-repair verified', start:'Start', hold:'On Hold', complete:'Complete', reopen:'Reopen', editCloseout:'Update repair closeout', save:'Save', selectAsset:'Select equipment', noAsset:'No equipment', quick:'Quick filters', active:'Active', newest:'Newest', oldest:'Oldest', dueSoon:'Due soon', created:'Created'
+  },
+  ko: {
+    title:'작업지시', search:'작업 검색...', add:'작업 생성', filters:'필터', sort:'정렬', all:'전체', open:'진행 전', repair:'수리', mine:'내 작업', overdue:'기한 초과', completed:'완료', noData:'등록된 작업이 없습니다', noResults:'검색 결과가 없습니다', priority:'우선순위', status:'상태', asset:'설비', due:'기한', description:'설명', type:'작업 유형', corrective:'수리', preventive:'예방정비', inspection:'점검', low:'낮음', medium:'보통', high:'높음', urgent:'긴급', create:'작업 생성', cancel:'취소', details:'상세', activity:'활동', rootCause:'근본 원인', correctiveAction:'개선 조치', downtime:'다운타임(분)', verified:'수리 후 확인 완료', start:'시작', hold:'보류', complete:'완료', reopen:'다시 열기', editCloseout:'수리 결과 업데이트', save:'저장', selectAsset:'설비 선택', noAsset:'설비 없음', quick:'빠른 필터', active:'적용 중', newest:'최신순', oldest:'오래된순', dueSoon:'기한 임박순', created:'생성일'
+  },
+} as const;
+
+export function getWorkOrderUi(locale: Locale) { return workOrderUi[locale]; }
