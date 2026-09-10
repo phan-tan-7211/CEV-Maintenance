@@ -7,9 +7,10 @@ type Props = {
   messages: any;
   onMasterPress?: (key: CatalogKey, title: string) => void;
   onHubPress?: (key: CatalogHubKey, title: string) => void;
+  onAssetCatalogAdmin?: () => void;
 };
 
-export function CatalogScreen({ messages, onMasterPress, onHubPress }: Props) {
+export function CatalogScreen({ messages, onMasterPress, onHubPress, onAssetCatalogAdmin }: Props) {
   const groups: { key: CatalogKey | CatalogHubKey; kind: 'master' | 'hub'; icon: keyof typeof Ionicons.glyphMap; title: string; note: string }[] = [
     { key: 'assets', kind: 'master', icon: 'cube-outline', title: messages.catalog.assets, note: messages.catalog.assetsNote },
     { key: 'assetTypes', kind: 'master', icon: 'git-branch-outline', title: messages.catalog.assetTypes, note: messages.catalog.assetTypesNote },
@@ -19,6 +20,15 @@ export function CatalogScreen({ messages, onMasterPress, onHubPress }: Props) {
     { key: 'people', kind: 'hub', icon: 'people-outline', title: messages.catalog.peopleGroups, note: messages.catalog.peopleGroupsNote },
     { key: 'partners', kind: 'hub', icon: 'business-outline', title: messages.catalog.partners, note: messages.catalog.partnersNote },
   ];
+
+  const openItem = (item: (typeof groups)[number]) => {
+    if (item.key === 'assetTypes' && onAssetCatalogAdmin) {
+      onAssetCatalogAdmin();
+      return;
+    }
+    if (item.kind === 'master') onMasterPress?.(item.key as CatalogKey, item.title);
+    else onHubPress?.(item.key as CatalogHubKey, item.title);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -33,7 +43,7 @@ export function CatalogScreen({ messages, onMasterPress, onHubPress }: Props) {
 
       <View style={styles.list}>
         {groups.map((item) => (
-          <TouchableOpacity key={`${item.kind}-${item.key}`} style={styles.card} activeOpacity={0.7} onPress={() => item.kind === 'master' ? onMasterPress?.(item.key as CatalogKey, item.title) : onHubPress?.(item.key as CatalogHubKey, item.title)}>
+          <TouchableOpacity key={`${item.kind}-${item.key}`} style={styles.card} activeOpacity={0.7} onPress={() => openItem(item)}>
             <View style={styles.iconWrap}><Ionicons name={item.icon} size={22} color={colors.primary} /></View>
             <View style={styles.cardBody}><Text style={styles.cardTitle}>{item.title}</Text><Text style={styles.cardNote}>{item.note}</Text></View>
             <Ionicons name="chevron-forward" size={20} color={colors.muted} />
