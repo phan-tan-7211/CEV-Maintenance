@@ -4,13 +4,14 @@ import { colors } from '../theme/colors';
 import type { CatalogHubKey, CatalogKey } from '../data/masterData';
 
 type Props = {
+  brand?: string;
   messages: any;
   onMasterPress?: (key: CatalogKey, title: string) => void;
   onHubPress?: (key: CatalogHubKey, title: string) => void;
   onAssetCatalogAdmin?: () => void;
 };
 
-export function CatalogScreen({ messages, onMasterPress, onHubPress, onAssetCatalogAdmin }: Props) {
+export function CatalogScreen({ brand = 'CEV', messages, onMasterPress, onHubPress, onAssetCatalogAdmin }: Props) {
   const groups: { key: CatalogKey | CatalogHubKey; kind: 'master' | 'hub'; icon: keyof typeof Ionicons.glyphMap; title: string; note: string }[] = [
     { key: 'assets', kind: 'master', icon: 'cube-outline', title: messages.catalog.assets, note: messages.catalog.assetsNote },
     { key: 'assetTypes', kind: 'master', icon: 'git-branch-outline', title: messages.catalog.assetTypes, note: messages.catalog.assetTypesNote },
@@ -32,7 +33,7 @@ export function CatalogScreen({ messages, onMasterPress, onHubPress, onAssetCata
 
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <Text style={styles.eyebrow}>CEV · IATF 16949</Text>
+      <Text style={styles.eyebrow}>{brand}</Text>
       <Text style={styles.title}>{messages.catalog.title}</Text>
       <Text style={styles.subtitle}>{messages.catalog.subtitle}</Text>
 
