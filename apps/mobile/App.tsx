@@ -10,7 +10,7 @@ import { CatalogHubScreen } from './src/screens/CatalogHubScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { MasterListScreen } from './src/screens/MasterListScreen';
 import { AssetListScreen } from './src/screens/AssetListScreen';
-import { AssetGroupFormScreen } from './src/screens/AssetGroupFormScreen';
+import { AssetFormScreen } from './src/screens/AssetFormScreen';
 import { RecordDetailScreen } from './src/screens/RecordDetailScreen';
 import { RecordFormScreen } from './src/screens/RecordFormScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
@@ -32,9 +32,9 @@ type Route =
   | { kind: 'maintenance'; title: string; filter: MaintenanceFilter }
   | { kind: 'catalogHub'; hub: CatalogHubKey; title: string }
   | { kind: 'master'; category: CatalogKey; title: string }
-  | { kind: 'assetGroupForm' }
+  | { kind: 'assetCreate' }
   | { kind: 'detail'; category: CatalogKey; title: string; record: MasterRecord }
-  | { kind: 'form'; category: CatalogKey; title: string; record?: MasterRecord; initialGroupId?: string; initialTypeId?: string; flowStep?: 2 | 3 }
+  | { kind: 'form'; category: CatalogKey; title: string; record?: MasterRecord }
   | null;
 
 export default function App() {
@@ -47,7 +47,11 @@ export default function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { setSession(data.session); setAuthLoading(false); });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => { setSession(nextSession); setAuthLoading(false); if (!nextSession) { setRoute(null); setTab('home'); } });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setAuthLoading(false);
+      if (!nextSession) { setRoute(null); setTab('home'); }
+    });
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -63,7 +67,6 @@ export default function App() {
   if (!session) return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><AuthScreen locale={locale} onChangeLocale={setLocale} /></View></SafeAreaView>;
 
   const openMaster = (category: CatalogKey, title: string) => setRoute({ kind: 'master', category, title });
-  const openAssetMaster = () => setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets });
 
   const renderRoute = () => {
     if (!route) return null;
@@ -71,54 +74,28 @@ export default function App() {
     if (route.kind === 'work') return <WorkOrderListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'maintenance') return <MaintenanceListScreen title={route.title} filter={route.filter} messages={messages} onBack={() => setRoute(null)} />;
     if (route.kind === 'catalogHub') return <CatalogHubScreen hub={route.hub} title={route.title} messages={messages} onBack={() => setRoute(null)} onMasterPress={openMaster} onSimplePress={(title) => setRoute({ kind: 'simple', parent: 'catalog', title })} />;
+
     if (route.kind === 'master' && route.category === 'assets') {
       return <AssetListScreen
         messages={messages}
         onBack={() => setRoute(null)}
         onOpenRecord={(record) => setRoute({ kind: 'detail', category: 'assets', title: route.title, record })}
-        onCreateGroup={() => setRoute({ kind: 'assetGroupForm' })}
-        onCreateType={() => setRoute({ kind: 'form', category: 'assetTypes', title: messages.catalog.assetTypes, flowStep: 2 })}
-        onCreateAsset={() => setRoute({ kind: 'form', category: 'assets', title: messages.catalog.assets, flowStep: 3 })}
+        onCreateAsset={() => setRoute({ kind: 'assetCreate' })}
       />;
     }
+
+    if (route.kind === 'assetCreate') {
+      return <AssetFormScreen
+        messages={messages}
+        onBack={() => setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets })}
+        onSaved={(record) => setRoute({ kind: 'detail', category: 'assets', title: messages.catalog.assets, record })}
+      />;
+    }
+
     if (route.kind === 'master') return <MasterListScreen category={route.category} title={route.title} messages={messages} onBack={() => setRoute(null)} onOpenRecord={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })} onCreate={() => setRoute({ kind: 'form', category: route.category, title: route.title })} />;
-    if (route.kind === 'assetGroupForm') {
-      return <AssetGroupFormScreen
-        messages={messages}
-        onBack={openAssetMaster}
-        onSaved={(group) => setRoute({ kind: 'form', category: 'assetTypes', title: messages.catalog.assetTypes, initialGroupId: group.id, flowStep: 2 })}
-      />;
-    }
     if (route.kind === 'detail') return <RecordDetailScreen category={route.category} title={route.title} record={route.record} messages={messages} onBack={() => setRoute({ kind: 'master', category: route.category, title: route.title })} onEdit={() => setRoute({ kind: 'form', category: route.category, title: route.title, record: route.record })} />;
-    if (route.kind === 'form') {
-      return <RecordFormScreen
-        category={route.category}
-        title={route.title}
-        record={route.record}
-        initialGroupId={route.initialGroupId}
-        initialTypeId={route.initialTypeId}
-        flowStep={route.flowStep}
-        messages={messages}
-        onBack={() => {
-          if (route.record) {
-            setRoute({ kind: 'detail', category: route.category, title: route.title, record: route.record });
-            return;
-          }
-          if (route.flowStep) {
-            openAssetMaster();
-            return;
-          }
-          setRoute({ kind: 'master', category: route.category, title: route.title });
-        }}
-        onSaved={(record) => {
-          if (!route.record && route.category === 'assetTypes' && route.flowStep === 2) {
-            setRoute({ kind: 'form', category: 'assets', title: messages.catalog.assets, initialGroupId: record.groupId, initialTypeId: record.id, flowStep: 3 });
-            return;
-          }
-          setRoute({ kind: 'detail', category: route.category, title: route.title, record });
-        }}
-      />;
-    }
+    if (route.kind === 'form') return <RecordFormScreen category={route.category} title={route.title} record={route.record} messages={messages} onBack={() => route.record ? setRoute({ kind: 'detail', category: route.category, title: route.title, record: route.record }) : setRoute({ kind: 'master', category: route.category, title: route.title })} onSaved={(record) => setRoute({ kind: 'detail', category: route.category, title: route.title, record })} />;
+
     const parentLabel = tabs.find((item) => item.key === route.parent)?.label ?? messages.nav.home;
     return <View style={styles.child}><BackHeader label={parentLabel} onPress={() => setRoute(null)} /><ListScreen title={route.title} subtitle={messages.common.childSubtitle} icon="document-text-outline" items={[]} /></View>;
   };
@@ -151,4 +128,14 @@ export default function App() {
   return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><View style={styles.main}>{route ? renderRoute() : renderRoot()}</View><View style={styles.nav}>{tabs.map((item) => { const active = item.key === tab; return <TouchableOpacity key={item.key} style={styles.navItem} onPress={() => changeTab(item.key)} activeOpacity={0.7}><Ionicons name={active ? (item.icon.replace('-outline', '') as keyof typeof Ionicons.glyphMap) : item.icon} size={22} color={active ? colors.primary : colors.muted} /><Text style={[styles.navText, active && styles.navTextActive]}>{item.label}</Text></TouchableOpacity>; })}</View></View></SafeAreaView>;
 }
 
-const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.background }, authPage: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }, shell: { flex: 1, width: '100%', maxWidth: Platform.OS === 'web' ? 480 : undefined, alignSelf: 'center', backgroundColor: colors.background, borderLeftWidth: Platform.OS === 'web' ? 1 : 0, borderRightWidth: Platform.OS === 'web' ? 1 : 0, borderColor: colors.border }, main: { flex: 1 }, child: { flex: 1 }, nav: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 78, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: 'row', paddingBottom: 8 }, navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 }, navText: { fontSize: 11, fontWeight: '600', color: colors.muted }, navTextActive: { color: colors.primary, fontWeight: '800' } });
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background },
+  authPage: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  shell: { flex: 1, width: '100%', maxWidth: Platform.OS === 'web' ? 480 : undefined, alignSelf: 'center', backgroundColor: colors.background, borderLeftWidth: Platform.OS === 'web' ? 1 : 0, borderRightWidth: Platform.OS === 'web' ? 1 : 0, borderColor: colors.border },
+  main: { flex: 1 },
+  child: { flex: 1 },
+  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 78, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: 'row', paddingBottom: 8 },
+  navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  navText: { fontSize: 11, fontWeight: '600', color: colors.muted },
+  navTextActive: { color: colors.primary, fontWeight: '800' },
+});
