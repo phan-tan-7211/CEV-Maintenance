@@ -7,7 +7,7 @@ import type { Locale } from '../i18n';
 
 const copy = {
   vi: {
-    title: 'CEV Bảo trì', subtitle: 'Đăng nhập để sử dụng dữ liệu bảo trì thật', email: 'Email', password: 'Mật khẩu', signIn: 'Đăng nhập', signUp: 'Tạo tài khoản', language: 'Ngôn ngữ',
+    title: 'CEV · Maintenance', subtitle: 'Đăng nhập để sử dụng dữ liệu bảo trì thật', email: 'Email', password: 'Mật khẩu', signIn: 'Đăng nhập', signUp: 'Tạo tài khoản', language: 'Ngôn ngữ',
     required: 'Vui lòng nhập email và mật khẩu.', creating: 'Đang tạo tài khoản...', signingIn: 'Đang đăng nhập...',
     verifyTitle: 'Đã gửi email xác nhận',
     verifyBody: 'Tài khoản đã được tạo. Hãy mở email, bấm “Confirm email address”, sau đó quay lại đây và đăng nhập.',
@@ -15,7 +15,7 @@ const copy = {
     errorTitle: 'Không thể thực hiện',
   },
   en: {
-    title: 'CEV Maintenance', subtitle: 'Sign in to use live maintenance data', email: 'Email', password: 'Password', signIn: 'Sign in', signUp: 'Create account', language: 'Language',
+    title: 'CEV · Maintenance', subtitle: 'Sign in to use live maintenance data', email: 'Email', password: 'Password', signIn: 'Sign in', signUp: 'Create account', language: 'Language',
     required: 'Enter email and password.', creating: 'Creating account...', signingIn: 'Signing in...',
     verifyTitle: 'Confirmation email sent',
     verifyBody: 'Your account was created. Open the email, tap “Confirm email address”, then return here and sign in.',
@@ -23,7 +23,7 @@ const copy = {
     errorTitle: 'Unable to continue',
   },
   ko: {
-    title: 'CEV 유지보수', subtitle: '실제 유지보수 데이터를 사용하려면 로그인하세요.', email: '이메일', password: '비밀번호', signIn: '로그인', signUp: '계정 만들기', language: '언어',
+    title: 'CEV · Maintenance', subtitle: '실제 유지보수 데이터를 사용하려면 로그인하세요.', email: '이메일', password: '비밀번호', signIn: '로그인', signUp: '계정 만들기', language: '언어',
     required: '이메일과 비밀번호를 입력하세요.', creating: '계정 생성 중...', signingIn: '로그인 중...',
     verifyTitle: '인증 이메일을 보냈습니다',
     verifyBody: '계정이 생성되었습니다. 이메일에서 “Confirm email address”를 누른 뒤 이 화면으로 돌아와 로그인하세요.',
