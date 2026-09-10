@@ -1,9 +1,10 @@
 import { supabase } from '../lib/supabase';
 import { rememberScan } from '../offline/store';
 import { enqueueBusinessEvent } from '../offline/queue';
+import type { MasterRecord } from './masterData';
 
 export type QrTarget =
-  | { kind: 'asset'; id: string; code: string; name: string; status?: string }
+  | { kind: 'asset'; id: string; code: string; name: string; status?: MasterRecord['status'] }
   | { kind: 'work_order'; id: string; code: string; title: string; status: string; assetId?: string }
   | { kind: 'part'; id: string; code: string; name: string; status?: string };
 
@@ -51,7 +52,7 @@ export async function resolveQr(raw: string): Promise<QrResolution> {
   const asset = await findAsset(parsed.code);
   if (asset) {
     await enqueueBusinessEvent('asset.scan', { asset_id: asset.id, code: asset.code });
-    return { raw, normalized: parsed.normalized, legacyType: parsed.legacyType, target: { kind: 'asset', id: asset.id, code: asset.code, name: asset.name, status: asset.status ?? undefined } };
+    return { raw, normalized: parsed.normalized, legacyType: parsed.legacyType, target: { kind: 'asset', id: asset.id, code: asset.code, name: asset.name, status: asset.status as MasterRecord['status'] } };
   }
 
   const workOrder = await findWorkOrder(parsed.code);
@@ -63,7 +64,7 @@ export async function resolveQr(raw: string): Promise<QrResolution> {
   return { raw, normalized: parsed.normalized, legacyType: parsed.legacyType, notFound: true };
 }
 
-export function suggestedAssetActions(role: string | undefined, status: string | undefined) {
+export function suggestedAssetActions(role: string | undefined, status: MasterRecord['status'] | undefined) {
   const actions: Array<'view' | 'report_issue' | 'create_work_order'> = ['view'];
   if (status !== 'retired') actions.push('report_issue');
   if (role !== 'requestor' && role !== 'viewer' && status !== 'retired') actions.push('create_work_order');
