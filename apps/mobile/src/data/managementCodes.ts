@@ -5,13 +5,12 @@ type Rule = { codeType: string; prefix: string; digits: number; label: string };
 
 export const managementCodeRules: Partial<Record<CatalogKey, Rule>> = {
   assets: { codeType: 'asset', prefix: 'TS', digits: 4, label: 'Tài sản' },
-  locations: { codeType: 'location', prefix: 'KV', digits: 3, label: 'Khu vực / vị trí' },
-  spareParts: { codeType: 'spare_part', prefix: 'PT', digits: 4, label: 'Phụ tùng thay thế' },
-  consumables: { codeType: 'maintenance_consumable', prefix: 'VT', digits: 4, label: 'Vật tư bảo trì' },
-  suppliers: { codeType: 'service_supplier', prefix: 'NCC', digits: 4, label: 'Nhà cung cấp dịch vụ' },
+  locations: { codeType: 'location', prefix: 'KV', digits: 3, label: 'Vị trí' },
+  spareParts: { codeType: 'spare_part', prefix: 'PT', digits: 4, label: 'Phụ tùng' },
+  suppliers: { codeType: 'supplier', prefix: 'NCC', digits: 4, label: 'Nhà cung cấp' },
   customers: { codeType: 'customer', prefix: 'KH', digits: 4, label: 'Khách hàng' },
   meters: { codeType: 'meter', prefix: 'DH', digits: 4, label: 'Đồng hồ theo dõi' },
-  teams: { codeType: 'team', prefix: 'NH', digits: 3, label: 'Nhóm người dùng' },
+  teams: { codeType: 'team', prefix: 'NH', digits: 3, label: 'Nhóm' },
 };
 
 export function hasAutomaticManagementCode(category: CatalogKey) {
