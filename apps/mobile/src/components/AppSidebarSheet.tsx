@@ -125,5 +125,5 @@ const styles = StyleSheet.create({
   sectionBorder: { borderTopWidth: 1, borderTopColor: colors.border },
   sectionLabel: { paddingHorizontal: 10, paddingVertical: 8, fontSize: 10, fontWeight: '900', letterSpacing: 1.1, color: colors.muted },
   item: { minHeight: 46, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 10, borderRadius: 10 },
-  itemText: { flex: 1, fontSize: 14, fontWeight: '650', color: colors.text },
+  itemText: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.text },
 });
