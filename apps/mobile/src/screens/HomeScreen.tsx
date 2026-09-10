@@ -7,7 +7,7 @@ import { loadDashboard, type DashboardData } from '../data/dashboardRepository';
 
 const empty: DashboardData = { openWork: 0, overdue: 0, pmToday: 0, stoppedEquipment: 0, attention: [] };
 
-export function HomeScreen({ messages }: { messages: any }) {
+export function HomeScreen({ messages, brand }: { messages: any; brand: string }) {
   const [data, setData] = useState<DashboardData>(empty);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -24,7 +24,7 @@ export function HomeScreen({ messages }: { messages: any }) {
     <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load(true)} />}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.eyebrow}>CEV · Maintenance</Text>
+          <Text style={styles.eyebrow}>{brand}</Text>
           <Text style={styles.title}>{messages.home.title}</Text>
           <Text style={styles.subtitle}>{messages.home.subtitle}</Text>
           <View style={styles.live}><View style={styles.dot} /><Text style={styles.liveText}>DATABASE · LIVE</Text></View>
@@ -32,7 +32,7 @@ export function HomeScreen({ messages }: { messages: any }) {
         <View style={styles.avatar}><Ionicons name="person" size={22} color={colors.primary} /></View>
       </View>
 
-      {loading ? <View style={styles.loading}><ActivityIndicator color={colors.primary} /><Text style={styles.loadingText}>Đang tải dữ liệu...</Text></View> : <>
+      {loading ? <View style={styles.loading}><ActivityIndicator color={colors.primary} /><Text style={styles.loadingText}>{messages.common.loading}</Text></View> : <>
         <View style={styles.grid}>
           <StatCard label={messages.home.openWork} value={String(data.openWork)} note={messages.home.openWorkNote} />
           <StatCard label={messages.home.overdue} value={String(data.overdue)} note={messages.home.overdueNote} />
@@ -49,7 +49,7 @@ export function HomeScreen({ messages }: { messages: any }) {
               <Ionicons name="chevron-forward" size={20} color={colors.muted} />
             </View>
           ))}
-          {data.attention.length === 0 ? <Text style={styles.empty}>Không có công việc cần chú ý.</Text> : null}
+          {data.attention.length === 0 ? <Text style={styles.empty}>—</Text> : null}
         </View>
       </>}
     </ScrollView>
