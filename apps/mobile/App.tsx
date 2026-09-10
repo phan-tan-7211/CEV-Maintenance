@@ -39,6 +39,8 @@ type Route =
   | { kind: 'form'; category: CatalogKey; title: string; record?: MasterRecord }
   | null;
 
+type BottomNavKey = 'dashboard' | 'scan' | 'equipment' | 'inventory' | 'orders' | 'menu';
+
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [route, setRoute] = useState<Route>(null);
@@ -152,17 +154,112 @@ export default function App() {
 
   const changeTab = (nextTab: Tab) => { setRoute(null); setTab(nextTab); };
 
-  return <SafeAreaView style={styles.safe}><StatusBar style="dark" /><View style={styles.shell}><View style={styles.main}>{route ? renderRoute() : renderRoot()}</View><View style={styles.nav}>{tabs.map((item) => { const active = item.key === tab; return <TouchableOpacity key={item.key} style={styles.navItem} onPress={() => changeTab(item.key)} activeOpacity={0.7}><Ionicons name={active ? (item.icon.replace('-outline', '') as keyof typeof Ionicons.glyphMap) : item.icon} size={22} color={active ? colors.primary : colors.muted} /><Text style={[styles.navText, active && styles.navTextActive]}>{item.label}</Text></TouchableOpacity>; })}</View></View></SafeAreaView>;
+  const bottomItems: { key: BottomNavKey; label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }[] = [
+    { key: 'dashboard', label: 'Trang chủ', icon: 'home-outline', onPress: () => changeTab('home') },
+    { key: 'scan', label: 'Quét mã', icon: 'scan-outline', onPress: () => { setTab('home'); setRoute({ kind: 'simple', parent: 'home', title: 'Quét QR' }); } },
+    { key: 'equipment', label: 'Thiết bị', icon: 'cube-outline', onPress: () => { setTab('catalog'); setRoute({ kind: 'master', category: 'assets', title: messages.catalog.assets }); } },
+    { key: 'inventory', label: 'Kho', icon: 'business-outline', onPress: () => { setTab('catalog'); setRoute({ kind: 'catalogHub', hub: 'inventory', title: 'Kho & phụ tùng' }); } },
+    { key: 'orders', label: 'Công việc', icon: 'clipboard-outline', onPress: () => changeTab('work') },
+    { key: 'menu', label: 'Menu', icon: 'menu-outline', onPress: () => changeTab('catalog') },
+  ];
+
+  const activeBottomKey: BottomNavKey = (() => {
+    if (!route && tab === 'home') return 'dashboard';
+    if (route?.kind === 'simple' && route.title === 'Quét QR') return 'scan';
+    if (route?.kind === 'assetCreate') return 'equipment';
+    if ((route?.kind === 'master' || route?.kind === 'detail' || route?.kind === 'form') && route.category === 'assets') return 'equipment';
+    if (route?.kind === 'catalogHub' && route.hub === 'inventory') return 'inventory';
+    if (route?.kind === 'master' && (route.category === 'spareParts' || route.category === 'consumables')) return 'inventory';
+    if (route?.kind === 'work' || (!route && tab === 'work')) return 'orders';
+    return 'menu';
+  })();
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar style="dark" />
+      <View style={styles.shell}>
+        <View style={styles.main}>{route ? renderRoute() : renderRoot()}</View>
+        <View style={styles.nav} accessibilityRole="tablist">
+          {bottomItems.map((item) => {
+            const active = activeBottomKey === item.key;
+            return (
+              <TouchableOpacity
+                key={item.key}
+                style={styles.navItem}
+                onPress={item.onPress}
+                activeOpacity={0.72}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={item.label}
+              >
+                <View style={[styles.navIconWrap, active && styles.navIconWrapActive]}>
+                  <Ionicons name={item.icon} size={21} color={active ? colors.primary : colors.muted} />
+                  {active ? <View style={styles.activeDot} /> : null}
+                </View>
+                <Text numberOfLines={1} style={[styles.navText, active && styles.navTextActive]}>{item.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   authPage: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   shell: { flex: 1, width: '100%', maxWidth: Platform.OS === 'web' ? 480 : undefined, alignSelf: 'center', backgroundColor: colors.background, borderLeftWidth: Platform.OS === 'web' ? 1 : 0, borderRightWidth: Platform.OS === 'web' ? 1 : 0, borderColor: colors.border },
-  main: { flex: 1 },
+  main: { flex: 1, paddingBottom: 68 },
   child: { flex: 1 },
-  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 78, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: 'row', paddingBottom: 8 },
-  navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 },
-  navText: { fontSize: 11, fontWeight: '600', color: colors.muted },
+  nav: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    minHeight: 64,
+    backgroundColor: Platform.OS === 'web' ? 'rgba(255,255,255,0.96)' : colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'space-around',
+    paddingHorizontal: 6,
+    paddingTop: 4,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  navItem: {
+    flex: 1,
+    minWidth: 48,
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+    paddingVertical: 5,
+  },
+  navIconWrap: {
+    position: 'relative',
+    width: 34,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIconWrapActive: { backgroundColor: colors.primarySoft },
+  activeDot: {
+    position: 'absolute',
+    top: 2,
+    left: 16,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.primary,
+  },
+  navText: { marginTop: 1, fontSize: 10, fontWeight: '600', color: colors.muted },
   navTextActive: { color: colors.primary, fontWeight: '800' },
 });
